@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: "carrybasar"
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    properties:
+      schema: transportsschema
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret-key: dca58f1c946f7b7ca8cfdb1c04201783b323dd281ab8be2af81db63798e8a4d4
+    expiration-time: 3600000
+
