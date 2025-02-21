@@ -34,6 +34,9 @@ public class AuthService {
 
     public Mono<User> register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        return userRepository.save(user).onErrorResume(e -> {
+            System.out.println("Error saving a user: " + e.getMessage());
+            return Mono.error(new RuntimeException("Error saving a user: ", e));
+        });
     }
 }

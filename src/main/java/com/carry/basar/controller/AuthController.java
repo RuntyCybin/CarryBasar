@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/public")
+@RequestMapping("/public/usr")
 public class AuthController {
 
     @Autowired
@@ -22,7 +22,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public Mono<String> secureEndpoint(@RequestBody AuthRequest authRequest) {
-
         return service.authenticate(authRequest.getUsername(), authRequest.getPassword())
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
