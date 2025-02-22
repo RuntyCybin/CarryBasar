@@ -25,18 +25,29 @@ public class RoleServiceImpl implements RoleService {
                     return roleDto;
                 })
                 .onErrorResume(e -> {
-            System.out.println("Error searching for a role: " + e.getMessage());
-            return Mono.error(new RuntimeException("Error searching for a role: ", e));
-        });
+                    System.out.println("Error searching for a role: " + e.getMessage());
+                    return Mono.error(new RuntimeException("Error searching for a role: ", e));
+                });
     }
 
     @Override
     public Mono<Role> registerRole(RoleDto roleDto) {
         Role role = new Role();
         role.setName(roleDto.getName());
-        return roleRepository.save(role).onErrorResume(e -> {
-            System.out.println("Error saving a role: " + e.getMessage());
-            return Mono.error(new RuntimeException("Error saving a role: ", e));
-        });
+
+        return roleRepository.findByName(role.getName())
+                .doOnNext(existingRole -> {
+                    if (existingRole != null) {
+                        throw new RuntimeException("Role already exists");
+                    }
+                })
+                .switchIfEmpty(roleRepository.save(role)).onErrorResume(e -> {
+                    System.out.println("Error saving a role: " + e.getMessage());
+                    return Mono.error(new RuntimeException("Error saving a role: ", e));
+                })
+                .onErrorResume(e -> {
+                    System.out.println("Error saving a role: " + e.getMessage());
+                    return Mono.error(new RuntimeException("Error saving a role: ", e));
+                });
     }
 }
