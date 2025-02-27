@@ -1,7 +1,8 @@
 package com.carry.basar.controller;
 
-import com.carry.basar.model.AuthRequest;
+import com.carry.basar.model.dto.auth.AuthRequest;
 import com.carry.basar.model.User;
+import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public Mono<User> register(@RequestBody User user) {
+    public Mono<User> register(@RequestBody CreateUserRequest user) {
         return service.register(user)
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Username already exists")));

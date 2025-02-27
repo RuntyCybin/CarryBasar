@@ -4,10 +4,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "roles")
+@Table("roles")
 public class Role {
     @Id
-    @Column("rol_id")
+    @Column("id")
     private Long rolId;
 
     @Column("descripcion")

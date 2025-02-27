@@ -1,4 +1,4 @@
-package com.carry.basar.model;
+package com.carry.basar.model.dto.auth;
 
 public class AuthRequest {
     private String username;

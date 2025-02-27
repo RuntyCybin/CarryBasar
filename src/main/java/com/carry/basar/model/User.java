@@ -3,7 +3,7 @@ package com.carry.basar.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "users")
+@Table("users")
 public class User {
     @Id
     private Long id;
@@ -14,9 +14,9 @@ public class User {
     public User() {
     }
 
-    public User(Long id, String username, String email, String password) {
+    public User(Long id, String name, String email, String password) {
         this.id = id;
-        this.name = username;
+        this.name = name;
         this.email = email;
         this.password = password;
     }
