@@ -14,21 +14,21 @@ CREATE TABLE transportsschema.users (
 
 -- 2.
 CREATE TABLE transportsschema.roles (
-  rol_id serial PRIMARY KEY,
+  id serial PRIMARY KEY,
   descripcion varchar(100)
 );
 
-
 -- 3.
 CREATE TABLE transportsschema.usuarios_roles (
-  usuario_id serial,
-  rol_id serial
+  id serial PRIMARY KEY,
+  usuario serial,
+  rol serial
 );
 
 
-ALTER TABLE transportsschema.usuarios_roles ADD FOREIGN KEY ("usuario_id") REFERENCES transportsschema.users (id);
+ALTER TABLE transportsschema.usuarios_roles ADD FOREIGN KEY ("usuario") REFERENCES transportsschema.users (id);
 
-ALTER TABLE transportsschema.usuarios_roles ADD FOREIGN KEY ("rol_id") REFERENCES transportsschema.roles (rol_id);
+ALTER TABLE transportsschema.usuarios_roles ADD FOREIGN KEY ("rol") REFERENCES transportsschema.roles (id);
 
 CREATE SEQUENCE cybinschema.users_seq;
 
@@ -39,11 +39,11 @@ ALTER SEQUENCE cybinschema.users_seq RESTART WITH 1;
 
 
 -- Inserting sample roles
-insert into transportsschema.roles (rol_id, descripcion) values
+insert into transportsschema.roles (id, descripcion) values
 (1, 'USER'),
 (2, 'ADMIN'),
 (3, 'TRANSPORTER'),
-(4, 'CLIENT');
+(4, 'CARRY');
 
 -- table of orders to transport
 CREATE TABLE transportsschema.orders (
@@ -55,40 +55,7 @@ CREATE TABLE transportsschema.orders (
 );
 
 insert into transportsschema.orders (id, description, user_id, vol, order_date) values (1,'test product', 1, 123, now());
--- ::::::::::::::::::::::::::::::::::::::::::::::::::::
--- ::::::::::::::!Carry Basar scripts::::::::::::::::::
--- ::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-SELECT MAX(id) FROM cybinschema.users;
-
-SELECT users.id, users.name, users.password FROM transportsschema.users WHERE users.name = 'user1';
-
 
 INSERT INTO transportsschema.usuarios_roles (usuario_id, rol_id) VALUES (1, 1);
 
-SELECT column_name
-FROM information_schema.columns
-WHERE table_name = 'usuarios_roles';
-
-
 ALTER TABLE transportsschema.usuarios_roles ADD COLUMN id SERIAL PRIMARY KEY;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
