@@ -30,6 +30,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
     public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
         return service.register(user)
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
