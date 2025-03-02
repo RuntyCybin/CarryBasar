@@ -45,24 +45,19 @@ CREATE SEQUENCE transportsschema.users_seq;
 ALTER SEQUENCE transportsschema.users_seq RESTART WITH 1;
 
 
--- Inserting sample roles
+-- Inserts
 insert into transportsschema.roles (id, descripcion) values
 (1, 'USER'),
 (2, 'ADMIN'),
 (3, 'TRANSPORTER'),
 (4, 'CARRY');
 
--- table of orders to transport
-CREATE TABLE transportsschema.orders (
-    id int PRIMARY KEY,
-    description VARCHAR(200),
-    user_id int references transportsschema.users(id),
-    vol int not null,
-    order_date timestamp default current_timestamp
-);
-
-insert into transportsschema.orders (id, description, user_id, vol, order_date) values (1,'test product', 1, 123, now());
+-- Inserting data into the orders table
+INSERT INTO transportsschema.orders (id, description, user_id, vol, order_date) VALUES
+(1, 'Laptop', 1, 23, NOW()),
+(2, 'Smartphone', 2, 56, NOW()),
+(3, 'Tablet', 1, 45, NOW()),
+(4, 'Headphones', 3, 34, NOW()),
+(5, 'Monitor', 1, 22, NOW());
 
 INSERT INTO transportsschema.usuarios_roles (usuario_id, rol_id) VALUES (1, 1);
-
-ALTER TABLE transportsschema.usuarios_roles ADD COLUMN id SERIAL PRIMARY KEY;
