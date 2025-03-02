@@ -23,7 +23,6 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<String> secureEndpoint(@Valid @RequestBody AuthRequest authRequest) {
         return service.authenticate(authRequest.getUsername(), authRequest.getPassword())
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
@@ -31,7 +30,6 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
         return service.register(user)
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
