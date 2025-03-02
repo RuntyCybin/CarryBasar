@@ -1,7 +1,13 @@
 package com.carry.basar.model.dto.auth;
 
+import javax.validation.constraints.NotBlank;
+
 public class AuthRequest {
+
+    @NotBlank(message = "Username is mandatory for the authentication")
     private String username;
+
+    @NotBlank(message = "Password is mandatory for the authentication")
     private String password;
 
     public AuthRequest() {

@@ -7,6 +7,9 @@ import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
+
+import java.util.Set;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -20,7 +23,8 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserRolRepository userRolRepository;
 
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, RoleRepository roleRepository, UserRolRepository userRolRepository) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository, UserRolRepository userRolRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
@@ -43,6 +47,19 @@ public class UserService {
     public Mono<User> register(CreateUserRequest createUserRequest) {
         // mapping CreateUserRequest to User
         User user = mapUser(createUserRequest);
+        return userRepository.findByEmail(user.getEmail())
+                .flatMap(existingUser -> {
+                    System.out.println("User already exists: " + existingUser.getEmail());
+                    return Mono.error(new RuntimeException("User already exists: " + existingUser.getEmail()));
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    System.out.println("User does not exist: " + user.getEmail());
+                    return assignRolesToUser(user, createUserRequest.getRoles());
+                }))
+                .cast(User.class);
+    }
+
+    private Mono<User> assignRolesToUser(User user, Set<String> roles) {
         return userRepository.save(user)
                 .flatMap(savedUser -> {
                     if (savedUser.getId() == null) {
@@ -51,18 +68,16 @@ public class UserService {
                     System.out.println("User saved: " + savedUser.getId());
 
                     // 2. Buscar roles de forma reactiva
-                    return Flux.fromIterable(createUserRequest.getRoles())
-                            .flatMap(roleName ->
-                                    roleRepository.findByName(roleName)
-                                            .flatMap(role -> {
-                                                if (role == null || role.getRolId() == null) {
-                                                    return Mono.error(new RuntimeException("Rol no encontrado: " + roleName));
-                                                }
-                                                UserRol userRol = new UserRol(null, savedUser.getId(), role.getRolId());
-                                                System.out.println("Creando UserRol: " + userRol.getUserId());
-                                                return Mono.just(userRol);
-                                            })
-                            )
+                    return Flux.fromIterable(roles)
+                            .flatMap(roleName -> roleRepository.findByName(roleName)
+                                    .flatMap(role -> {
+                                        if (role == null || role.getRolId() == null) {
+                                            return Mono.error(new RuntimeException("Rol no encontrado: " + roleName));
+                                        }
+                                        UserRol userRol = new UserRol(null, savedUser.getId(), role.getRolId());
+                                        System.out.println("Creando UserRol: " + userRol.getUserId());
+                                        return Mono.just(userRol);
+                                    }))
                             .doOnNext(userRol -> System.out.println("UserRol listo para ser guardado: " + userRol))
                             .collectList()
                             .flatMapMany(userRolRepository::saveAll)
