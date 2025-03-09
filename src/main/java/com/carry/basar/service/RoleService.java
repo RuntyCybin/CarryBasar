@@ -1,7 +1,8 @@
 package com.carry.basar.service;
 
 import com.carry.basar.model.Role;
-import com.carry.basar.model.RoleDto;
+import com.carry.basar.model.dto.RoleDto;
+
 import reactor.core.publisher.Mono;
 
 public interface RoleService {

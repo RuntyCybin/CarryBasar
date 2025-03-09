@@ -1,4 +1,4 @@
-package com.carry.basar.model;
+package com.carry.basar.model.dto;
 
 public class RoleDto {
     private String name;
