@@ -10,8 +10,11 @@ import com.carry.basar.model.repository.UserRolRepository;
 
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -40,11 +43,15 @@ public class UserService {
 
                     System.out.println("Error searching for a user: " + e.getMessage());
                     return Mono.error(new RuntimeException("Error searching for a user: ", e));
-
                 });
     }
 
     public Mono<User> register(CreateUserRequest createUserRequest) {
+
+        if (!isVerified(createUserRequest)) {
+            return Mono.error(new IllegalArgumentException("Invalid argument found"));
+        }
+
         // mapping CreateUserRequest to User
         User user = mapUser(createUserRequest);
         return userRepository.findByEmail(user.getEmail())
@@ -57,6 +64,29 @@ public class UserService {
                     return assignRolesToUser(user, createUserRequest.getRoles());
                 }))
                 .cast(User.class);
+    }
+
+    private boolean isVerified(CreateUserRequest createUserRequest) {
+
+        if (createUserRequest.getUsername().matches("\\d+")) {
+            return false;
+        }
+
+        if ((createUserRequest.getUsername() == null || createUserRequest.getUsername().isEmpty())
+                && (createUserRequest.getUsername().matches("\\d+"))) {
+            return false;
+        }
+        if (createUserRequest.getPassword() == null || createUserRequest.getPassword().isEmpty()) {
+            return false;
+        }
+        if (createUserRequest.getEmail() == null || createUserRequest.getEmail().isEmpty()) {
+            return false;
+        }
+        if (createUserRequest.getRoles() == null || createUserRequest.getRoles().isEmpty()) {
+            return false;
+        }
+
+        return true;
     }
 
     private Mono<User> assignRolesToUser(User user, Set<String> roles) {
@@ -72,7 +102,8 @@ public class UserService {
                             .flatMap(roleName -> roleRepository.findByName(roleName)
                                     .flatMap(role -> {
                                         if (role == null || role.getRolId() == null) {
-                                            return Mono.error(new RuntimeException("Rol no encontrado: " + roleName));
+                                            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                    "El rol " + roleName + " no existe"));
                                         }
                                         UserRol userRol = new UserRol(null, savedUser.getId(), role.getRolId());
                                         System.out.println("Creando UserRol: " + userRol.getUserId());
