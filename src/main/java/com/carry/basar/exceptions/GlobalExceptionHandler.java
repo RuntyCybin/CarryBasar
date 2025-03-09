@@ -30,4 +30,14 @@ public class GlobalExceptionHandler {
         response.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return response;
     }
+
+    // Handle IllegalArgumentException
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error: ", ex.getMessage());
+        response.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        return response;
+    }
 }

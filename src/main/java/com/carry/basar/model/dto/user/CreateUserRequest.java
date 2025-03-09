@@ -4,7 +4,7 @@ import java.util.Set;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class CreateUserRequest {
@@ -21,7 +21,7 @@ public class CreateUserRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotEmpty(message = "You must add at least one role")
+    @NotNull(message = "Debe asignar al menos un rol al usuario")
     private Set<String> roles;
 
     public CreateUserRequest() {

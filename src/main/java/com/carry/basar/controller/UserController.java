@@ -8,6 +8,7 @@ import com.carry.basar.service.UserService;
 import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
@@ -32,8 +33,7 @@ public class UserController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
-        return service.register(user)
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Username already exists")));
+        return service.register(user);
     }
+    
 }
