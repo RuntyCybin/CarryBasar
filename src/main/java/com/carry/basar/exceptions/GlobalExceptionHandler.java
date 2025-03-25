@@ -40,4 +40,5 @@ public class GlobalExceptionHandler {
         response.put("timestamp", String.valueOf(System.currentTimeMillis()));
         return response;
     }
+
 }
