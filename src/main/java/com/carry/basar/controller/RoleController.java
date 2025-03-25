@@ -1,7 +1,7 @@
 package com.carry.basar.controller;
 
 import com.carry.basar.model.Role;
-import com.carry.basar.model.RoleDto;
+import com.carry.basar.model.dto.RoleDto;
 import com.carry.basar.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

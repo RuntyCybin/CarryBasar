@@ -1,7 +1,7 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.model.Role;
-import com.carry.basar.model.RoleDto;
+import com.carry.basar.model.dto.RoleDto;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.service.RoleService;
 import org.springframework.stereotype.Service;

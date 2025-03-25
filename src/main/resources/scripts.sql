@@ -29,9 +29,10 @@ CREATE TABLE transportsschema.usuarios_roles (
 CREATE TABLE transportsschema.orders (
     id SERIAL PRIMARY KEY,
     description VARCHAR(200),
-    user_id int references transportsschema.users(id),
-    vol int not null,
-    order_date timestamp default current_timestamp
+    vol SERIAL not null,
+    orderdate timestamp default current_timestamp,
+    userid SERIAL not null,
+    constraint fk_user foreign key (userid) references transportsschema.users(id) on delete cascade
 );
 
 
