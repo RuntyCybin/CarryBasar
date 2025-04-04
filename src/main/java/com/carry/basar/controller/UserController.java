@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/public/usr")
 public class UserController {
 
-    private UserService service;
+    private final UserService service;
 
     public UserController(UserService service) {
         this.service = service;
