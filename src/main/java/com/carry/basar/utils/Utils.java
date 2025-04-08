@@ -1,7 +1,9 @@
 package com.carry.basar.utils;
 
+import com.carry.basar.model.dto.user.CreateUserRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -21,5 +23,38 @@ public class Utils {
               return null;
             })
             .switchIfEmpty(Mono.error(new RuntimeException("Authentication failed")));
+  }
+
+  public Mono<String> getAuthenticatedUser(Mono<SecurityContext> ctx) {
+    return ctx.map(context -> {
+      Authentication authentication = context.getAuthentication();
+      return authentication != null && authentication.isAuthenticated()
+              ? authentication.getName()
+              : "No hay usuario autenticado";
+    });
+
+  }
+
+
+  public boolean isVerified(CreateUserRequest createUserRequest) {
+
+    if (createUserRequest.getUsername().matches("\\d+")) {
+      return false;
+    }
+
+    if ((createUserRequest.getUsername() == null || createUserRequest.getUsername().isEmpty()) && (createUserRequest.getUsername().matches("\\d+"))) {
+      return false;
+    }
+    if (createUserRequest.getPassword() == null || createUserRequest.getPassword().isEmpty()) {
+      return false;
+    }
+    if (createUserRequest.getEmail() == null || createUserRequest.getEmail().isEmpty()) {
+      return false;
+    }
+    if (createUserRequest.getRoles() == null || createUserRequest.getRoles().isEmpty()) {
+      return false;
+    }
+
+    return true;
   }
 }
