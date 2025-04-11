@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/api/role")
 public class RoleController {
 
-    private RoleService service;
+    private final RoleService service;
 
     public RoleController(RoleService service) {
         this.service = service;
