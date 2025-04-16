@@ -2,6 +2,7 @@ package com.carry.basar.controller;
 
 import com.carry.basar.model.Role;
 import com.carry.basar.model.dto.RoleDto;
+import com.carry.basar.model.dto.role.UpdateRoleRequest;
 import com.carry.basar.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,13 @@ public class RoleController {
     @GetMapping("/find/{name}")
     public Mono<RoleDto> findRoleByName(@PathVariable String name) {
         return service.findRoleByName(name)
+                .onErrorResume(e -> Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Role not found")));
+    }
+
+    @PutMapping("/update")
+    public Mono<RoleDto> updateRole(@RequestBody UpdateRoleRequest request) {
+        return service.updateRole(request)
                 .onErrorResume(e -> Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Role not found")));
     }

@@ -2,6 +2,7 @@ package com.carry.basar.service.impl;
 
 import com.carry.basar.model.Role;
 import com.carry.basar.model.dto.RoleDto;
+import com.carry.basar.model.dto.role.UpdateRoleRequest;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.service.RoleService;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,20 @@ public class RoleServiceImpl implements RoleService {
             .onErrorResume(e -> {
               System.out.println("Error saving a role: " + e.getMessage());
               return Mono.error(new RuntimeException("Error saving a role: ", e));
+            });
+  }
+
+  @Override
+  public Mono<RoleDto> updateRole(UpdateRoleRequest request) {
+    return roleRepository.findByName(request.getSearchName())
+            .flatMap(roleFound -> {
+              roleFound.setName(request.getNewName());
+              return roleRepository.save(roleFound)
+                      .map(savedRole -> {
+                        RoleDto roleDto = new RoleDto();
+                        roleDto.setName(savedRole.getName());
+                        return roleDto;
+                      });
             });
   }
 }
