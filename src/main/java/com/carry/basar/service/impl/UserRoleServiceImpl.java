@@ -18,19 +18,15 @@ public class UserRoleServiceImpl implements UserRoleService {
 
   @Override
   public Mono<Void> removeAllRolesForUser(Long userId) {
-    System.out.println("Iniciando eliminación de roles para el usuario con ID: " + userId);
     return this.userRolRepository.findByUserId(userId)
-            .switchIfEmpty(Mono.error(
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, "No roles found for user with ID: " + userId)))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No roles found for user with ID: " + userId)))
             .doOnSubscribe(sub -> System.out.println("Subscribed to find roles for user with ID: " + userId))
-            .doOnNext(userRole -> {
-              if (null != userRole)
-                System.out.println("Suscritos userRole: " + userRole.getRoleId());
-            })
+            .doOnNext(userRole -> System.out.println("Suscritos userRole: " + userRole.getRoleId()))
             .doOnError(e -> System.out.println("Error al buscar roles para el usuario: " + e.getMessage()))
-            .flatMap(userRol -> userRolRepository.delete(userRol)
-                    .doOnSuccess(aVoid -> System.out.println("Rol eliminado: " + userRol.getRoleId()))
-                    .doOnError(error -> System.err.println("Error al eliminar rol: " + error.getMessage())))
+            .flatMap(userRol ->
+                    userRolRepository.delete(userRol)
+                            .doOnSuccess(aVoid -> System.out.println("Rol eliminado: " + userRol.getRoleId()))
+                            .doOnError(error -> System.err.println("Error al eliminar rol: " + error.getMessage())))
             .then();
   }
 }

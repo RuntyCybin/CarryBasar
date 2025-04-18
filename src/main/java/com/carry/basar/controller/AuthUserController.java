@@ -34,11 +34,20 @@ public class AuthUserController {
   }
 
   @PostMapping("/removeRoles")
-  public Mono<String> removeRoles() {
+  public Mono<Void> removeRoles() {
     return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
             .map(authentication -> authentication)
-            .doOnSuccess(service::removeAllRoles);
+            .flatMap(service::removeAllRoles);
+  }
+
+  @DeleteMapping("/delete")
+  public Mono<String> delete() {
+    return ReactiveSecurityContextHolder.getContext()
+            .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
+            .map(authentication -> authentication)
+            .doOnNext(msg -> System.out.println("Contexto: " + msg))
+            .doOnSuccess(service::removeUser);
   }
 
 }

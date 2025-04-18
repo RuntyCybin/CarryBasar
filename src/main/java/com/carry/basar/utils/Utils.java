@@ -1,14 +1,22 @@
 package com.carry.basar.utils;
 
+import com.carry.basar.model.User;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 public class Utils {
+
+  private final PasswordEncoder passwordEncoder;
+
+  public Utils(PasswordEncoder passwordEncoder) {
+    this.passwordEncoder = passwordEncoder;
+  }
 
   public Mono<String> getAuthenticatedUsername() {
     return ReactiveSecurityContextHolder.getContext()
@@ -56,5 +64,13 @@ public class Utils {
     }
 
     return true;
+  }
+
+  public User mapUser(CreateUserRequest createUserRequest) {
+    User user = new User();
+    user.setName(createUserRequest.getUsername());
+    user.setEmail(createUserRequest.getEmail());
+    user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
+    return user;
   }
 }
