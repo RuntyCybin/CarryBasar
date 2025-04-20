@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
                       user.setName(updateUserRequest.getUsername());
                       user.setEmail(updateUserRequest.getEmail());
                       user.setPassword(user.getPassword());
+
                       // Encadenar la eliminación de roles correctamente
                       return userRoleService.removeAllRolesForUser(user.getId())
                               .thenMany(Flux.fromIterable(updateUserRequest.getRole())
@@ -122,12 +123,11 @@ public class UserServiceImpl implements UserService {
   @Override
   public Mono<String> removeUser(String username) {
     return userRepository.findByName(username)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
-            .doOnSubscribe(subscription -> System.out.println("Subscribed to find a user: " + username))
             .doOnNext(user -> System.out.println("User found: " + user.getEmail()))
             .doOnError(error -> System.out.println("Error finding a user: " + error.getMessage()))
-            .flatMap(user -> userRoleService.removeAllRolesForUser(user.getId())
-                    .then(userRepository.delete(user)))
+            .flatMap(user ->
+                    userRoleService.removeAllRolesForUser(user.getId())
+                            .then(userRepository.delete(user)))
             .thenReturn("User and its roles were deleted successfully");
   }
 

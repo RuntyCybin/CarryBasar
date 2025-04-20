@@ -46,8 +46,7 @@ public class AuthUserController {
     return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
             .map(authentication -> authentication)
-            .doOnNext(msg -> System.out.println("Contexto: " + msg))
-            .doOnSuccess(service::removeUser);
+            .flatMap(service::removeUser);
   }
 
 }
