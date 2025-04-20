@@ -1,5 +1,7 @@
 package com.carry.basar.service;
 
+import reactor.core.publisher.Mono;
+
 public interface UserRoleService {
-  void removeAllRolesForUser(Long userId);
+  Mono<Void> removeAllRolesForUser(Long userId);
 }
