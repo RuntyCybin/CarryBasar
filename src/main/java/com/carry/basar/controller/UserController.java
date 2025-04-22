@@ -25,8 +25,8 @@ public class UserController {
     @PostMapping("/login")
     public Mono<String> secureEndpoint(@Valid @RequestBody AuthRequest authRequest) {
         return service.authenticate(authRequest.getUsername(), authRequest.getPassword())
-                .onErrorResume(e -> Mono.error(new ResponseStatusException(
-                        HttpStatus.UNAUTHORIZED, "Invalid credentials")));
+                .onErrorResume(e ->
+                        Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials")));
     }
 
     @PostMapping("/register")
