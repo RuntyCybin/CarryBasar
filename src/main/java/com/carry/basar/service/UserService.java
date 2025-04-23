@@ -3,6 +3,7 @@ package com.carry.basar.service;
 import com.carry.basar.model.User;
 import com.carry.basar.config.JwtUtil;
 import com.carry.basar.model.UserRol;
+import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.model.dto.user.UpdateUserRequest;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
@@ -27,7 +28,7 @@ import reactor.core.publisher.Mono;
 
 public interface UserService {
 
-  Mono<String> authenticate(String username, String password);
+  Mono<AuthResponse> authenticate(String username, String password);
 
   Mono<User> register(CreateUserRequest createUserRequest);
 
