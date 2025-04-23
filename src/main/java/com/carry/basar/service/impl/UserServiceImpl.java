@@ -1,6 +1,7 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.config.JwtUtil;
+import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
@@ -57,9 +58,15 @@ public class UserServiceImpl implements UserService {
               if (!passwordEncoder.matches(password, user.getPassword())) {
                 return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error, invalid credentials"));
               }
-              String tkn = jwtUtil.generateToken(user.getName());
-              AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail());
-              return Mono.just(response);
+              return userRolRepository.findByUserId(user.getId())
+                      .flatMap(userRol -> roleRepository.findById(userRol.getRoleId()))
+                      .map(Role::getName)
+                      .collectList()
+                      .flatMap(roleNames -> {
+                        String tkn = jwtUtil.generateToken(user.getName());
+                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames);
+                        return Mono.just(response);
+                      });
             })
             .doOnError(error -> System.out.println("Error searching for a user: " + error.getMessage()));
   }

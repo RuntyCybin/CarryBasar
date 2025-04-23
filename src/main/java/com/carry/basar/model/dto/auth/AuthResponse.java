@@ -1,14 +1,18 @@
 package com.carry.basar.model.dto.auth;
 
+import java.util.List;
+
 public class AuthResponse {
   private String jwt;
   private String username;
   private String email;
+  private List<String> roles;
 
-  public AuthResponse(String jwt, String username, String email) {
+  public AuthResponse(String jwt, String username, String email, List<String> roles) {
     this.jwt = jwt;
     this.username = username;
     this.email = email;
+    this.roles = roles;
   }
 
   public String getJwt() {
@@ -33,5 +37,13 @@ public class AuthResponse {
 
   public void setEmail(String email) {
     this.email = email;
+  }
+
+  public List<String> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(List<String> roles) {
+    this.roles = roles;
   }
 }
