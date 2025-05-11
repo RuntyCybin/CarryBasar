@@ -271,8 +271,20 @@
 
         async function fetchCompleto() {
             try {
+                const responseAuth = await fetch(`${API_URL}/public/usr/login`, {
+                    method: 'POST',
+                    body: {
+                        'username':'test1',
+                        'password':'Passw0rd'
+                    },
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
                 console.log("fetchCompleto");
-                const response = await fetch(`${API_URL}/api/completedusers`, {
+                const response = await fetch(`${API_URL}/v1/api/user/list`, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
