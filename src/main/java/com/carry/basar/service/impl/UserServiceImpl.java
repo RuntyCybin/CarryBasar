@@ -6,6 +6,7 @@ import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
+import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserRequest;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
 import com.carry.basar.model.repository.RoleRepository;
@@ -142,6 +143,19 @@ public class UserServiceImpl implements UserService {
                     userRoleService.removeAllRolesForUser(user.getId())
                             .then(userRepository.delete(user)))
             .thenReturn("User and its roles were deleted successfully");
+  }
+
+  @Override
+  public Flux<ListUsersResponse> listAllUsers() {
+    return userRepository.findAll()
+            .map(user -> new ListUsersResponse(user.getEmail(), user.getName()))
+            .collectList() // convierte Flux → Mono<List<ListUsersResponse>>
+            .flatMapMany(list -> {
+              if (list.isEmpty()) {
+                return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found"));
+              }
+              return Flux.fromIterable(list);
+            });
   }
 
 
