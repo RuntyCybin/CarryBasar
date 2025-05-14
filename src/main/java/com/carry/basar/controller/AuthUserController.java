@@ -1,18 +1,16 @@
 package com.carry.basar.controller;
 
 import javax.validation.Valid;
-
-import com.carry.basar.model.User;
-import com.carry.basar.model.dto.user.CreateUserRequest;
+import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
 import com.carry.basar.utils.Utils;
-import org.springframework.data.relational.core.query.Update;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import com.carry.basar.model.dto.user.UpdateUserRequest;
 import com.carry.basar.service.UserService;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -48,5 +46,27 @@ public class AuthUserController {
             .map(authentication -> authentication)
             .flatMap(service::removeUser);
   }
+
+  @GetMapping("/list")
+  public Flux<ListUsersResponse> listAllUsers() {
+    return ReactiveSecurityContextHolder.getContext()
+            .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
+            .flatMapMany(auth -> service.listAllUsers());
+  }
+
+  /**
+   * TODO: Solo los administradores pueden ver todos los usuarios
+   */
+  /*@GetMapping("/list")
+  public Flux<ListUsersResponse> listAllUsers() {
+    return ReactiveSecurityContextHolder.getContext()
+            .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
+            .flatMapMany(auth -> {
+              if (!auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                return Flux.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo administradores pueden ver todos los usuarios"));
+              }
+              return service.listAllUsers();
+            });
+  }*/
 
 }

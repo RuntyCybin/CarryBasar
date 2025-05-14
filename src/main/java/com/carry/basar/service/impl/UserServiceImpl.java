@@ -1,9 +1,12 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.config.JwtUtil;
+import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
+import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
+import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserRequest;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
 import com.carry.basar.model.repository.RoleRepository;
@@ -49,13 +52,24 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Mono<String> authenticate(String username, String password) {
+  public Mono<AuthResponse> authenticate(String username, String password) {
     return userRepository.findByName(username)
-            .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-            .flatMap(user -> Mono.just(jwtUtil.generateToken(user.getName()))).onErrorResume(e -> {
-              System.out.println("Error searching for a user: " + e.getMessage());
-              return Mono.error(new RuntimeException("Error searching for a user: ", e));
-            });
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Error, user not found")))
+            .flatMap(user -> {
+              if (!passwordEncoder.matches(password, user.getPassword())) {
+                return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error, invalid credentials"));
+              }
+              return userRolRepository.findByUserId(user.getId())
+                      .flatMap(userRol -> roleRepository.findById(userRol.getRoleId()))
+                      .map(Role::getName)
+                      .collectList()
+                      .flatMap(roleNames -> {
+                        String tkn = jwtUtil.generateToken(user.getName());
+                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames);
+                        return Mono.just(response);
+                      });
+            })
+            .doOnError(error -> System.out.println("Error searching for a user: " + error.getMessage()));
   }
 
   @Override
@@ -129,6 +143,19 @@ public class UserServiceImpl implements UserService {
                     userRoleService.removeAllRolesForUser(user.getId())
                             .then(userRepository.delete(user)))
             .thenReturn("User and its roles were deleted successfully");
+  }
+
+  @Override
+  public Flux<ListUsersResponse> listAllUsers() {
+    return userRepository.findAll()
+            .map(user -> new ListUsersResponse(user.getEmail(), user.getName()))
+            .collectList() // convierte Flux → Mono<List<ListUsersResponse>>
+            .flatMapMany(list -> {
+              if (list.isEmpty()) {
+                return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found"));
+              }
+              return Flux.fromIterable(list);
+            });
   }
 
 
