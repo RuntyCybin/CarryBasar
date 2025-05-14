@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Web Responsive</title>
+    <style>
+        /* Reset y variables */
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --text-color: #1f2937;
+            --background-color: #f3f4f6;
+            --card-background: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 6rem auto 2rem;
+            padding: 0 1rem;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        /* Error State */
+        .error {
+            color: #dc2626;
+            text-align: center;
+            padding: 1rem;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form {
+            display: grid;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .form input,
+        .form textarea {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .main-content {
+                margin-top: 8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <h1>Mi Web App</h1>
+            <div class="nav-links">
+                <a href="#" data-section="home">Inicio</a>
+                <a href="#" data-section="data">Datos</a>
+                <a href="#" data-section="form">Formulario</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div id="loading" class="loading">Cargando...</div>
+        <div id="error" class="error"></div>
+
+        <section id="home" class="section">
+            <h2>Bienvenido <span>a Mi Web App</span></h2>
+            <p>Esta es una aplicación web responsive que consume APIs.</p>
+        </section>
+
+        <section id="data" class="section" style="display: none;">
+            <h2>Datos desde la API</h2>
+            <div id="cards-grid" class="cards-grid"></div>
+        </section>
+
+        <section id="form" class="section" style="display: none;">
+            <div class="form-container">
+                <h2>Enviar Datos</h2>
+                <form id="dataForm" class="form">
+                    <div class="form-group">
+                        <label for="title">Título</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" name="description" required></textarea>
+                    </div>
+                    <button type="submit" class="button">Enviar</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        // DOM Elements
+        const loadingElement = document.getElementById('loading');
+        const errorElement = document.getElementById('error');
+        const cardsGrid = document.getElementById('cards-grid');
+        const dataForm = document.getElementById('dataForm');
+        const navLinks = document.querySelectorAll('.nav-links a');
+        const sections = document.querySelectorAll('.section');
+
+        // API Service
+        const api = {
+            async getData() {
+                fetchCompleto()
+                    .then(response => {
+                        cardsGrid.innerHTML = '';
+                        response.forEach(usuario => {
+                            console.log("ID: " + usuario.id);
+                            const userCard = `
+                        <div class="user">
+                            <p><strong>ID:</strong> ${usuario.id}</p>
+                            <p><strong>Nombre:</strong> ${usuario.name}</p>
+                            <p><strong>Email:</strong> ${usuario.role}</p>
+                        </div>
+                    `;
+                            cardsGrid.innerHTML += userCard;
+                        });
+                    })
+            },
+
+            async postData(data) {
+                try {
+                    const response = await fetch(`${API_URL}/data`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    if (!response.ok) throw new Error('Error al enviar los datos');
+                    return await response.json();
+                } catch (error) {
+                    throw new Error('Error al enviar los datos');
+                }
+            }
+        };
+
+        // Event Listeners
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.target.dataset.section;
+                showSection(section);
+            });
+        });
+
+        async function fetchCompleto() {
+            try {
+                const responseAuth = await fetch(`${API_URL}/public/usr/login`, {
+                    method: 'POST',
+                    body: {
+                        'username':'test1',
+                        'password':'Passw0rd'
+                    },
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log("fetchCompleto");
+                const response = await fetch(`${API_URL}/v1/api/user/list`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                return data;
+            } catch (error) {
+                console.error('Error:', error);
+                throw error;
+            }
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            sections.forEach(section => {
+                section.style.display = section.id === sectionId ? 'block' : 'none';
+            });
+
+            if (sectionId === 'data') {
+                loadData();
+            }
+
+            if (sectionId == 'home') {
+                console.log("HOME SECTION");
+                getCompletedUsers();
+            }
+        }
+
+        // Data Loading
+        async function loadData() {
+            try {
+                showLoading();
+                hideError();
+                const data = await api.getData();
+                renderCards(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+
+
+        // Versión 1: Manejo detallado de errores
+        async function fetchUsers() {
+            try {
+
+                const response = await fetch(`${API_URL}/api/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                        // Si necesitas autorización:
+                        // 'Authorization': 'Bearer your-token-here'
+                    }
+                });
+
+                // Logging para debug
+                console.log('Status:', response.status);
+                console.log('Headers:', response.headers);
+
+                if (!response.ok) {
+                    // Capturamos el mensaje de error del servidor si existe
+                    const errorData = await response.text();
+                    console.error('Error response:', errorData);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorData}`);
+                }
+
+                // Intentamos parsear la respuesta
+                const data = await response.json();
+                console.log('Data received:', data);
+                return data;
+
+            } catch (error) {
+                // Discriminamos tipos de error
+                if (error instanceof TypeError) {
+                    // Error de red o CORS
+                    console.error('Network or CORS error:', error);
+                    throw new Error('Error de conexión con el servidor');
+                } else if (error.name === 'SyntaxError') {
+                    // Error al parsear JSON
+                    console.error('JSON parsing error:', error);
+                    throw new Error('Error en el formato de la respuesta');
+                } else {
+                    // Otros errores
+                    console.error('Other error:', error);
+                    throw error;
+                }
+            }
+        }
+
+        // Versión 2: Implementación con validación de datos
+        async function fetchUsersWithValidation() {
+            try {
+                const response = await fetch(`${API_URL}/api/completedusers`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Validamos que la respuesta tenga la estructura esperada
+                if (!Array.isArray(data)) {
+                    throw new Error('La respuesta no es un array');
+                }
+
+                // Validamos cada objeto del array
+                const validUsers = data.every(user =>
+                    user.id &&
+                    typeof user.id === 'string' &&
+                    user.name &&
+                    typeof user.name === 'string' &&
+                    user.role &&
+                    typeof user.role === 'string'
+                );
+
+                if (!validUsers) {
+                    throw new Error('Formato de datos inválido');
+                }
+
+                return data;
+
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                throw new Error('Error al obtener los datos de usuarios');
+            }
+        }
+
+        // Ejemplo de uso:
+        async function init() {
+
+            try {
+                const users = await fetchUsers();
+                // o const users = await fetchUsersWithValidation();
+                console.log('Users:', users);
+            } catch (error) {
+                console.error('Error en init:', error.message);
+            }
+        }
+
+        // UI Functions
+        function showLoading() {
+            loadingElement.classList.add('active');
+        }
+
+        function hideLoading() {
+            loadingElement.classList.remove('active');
+        }
+
+        function showError(message) {
+            errorElement.textContent = message;
+            errorElement.classList.add('active');
+        }
+
+        function hideError() {
+            errorElement.classList.remove('active');
+        }
+
+        function renderCards(data) {
+            cardsGrid.innerHTML = data.map(item => `
+            <div class="card">
+                <h3>${item.title}</h3>
+                <p>${item.description}</p>
+            </div>
+        `).join('');
+        }
+
+        // Función para obtener usuarios completados
+        async function getCompletedUsers() {
+            const requestOptions = {
+                method: "GET"
+            }
+            fetch("http://localhost:8080/api/completedusers", requestOptions)
+                .then((response) => response.text())
+                .then((result) => console.log("RESULT:<" + result + ">"))
+                .catch((error) => console.error(error));
+        }
+
+        dataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                title: e.target.title.value,
+                description: e.target.description.value
+            };
+
+            try {
+                showLoading();
+                hideError();
+                await api.postData(formData);
+                e.target.reset();
+                showSection('data');
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Initial Load
+        showSection('home');
+    </script>
+</body>
+
+</html>

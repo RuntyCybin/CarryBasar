@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CarrybasarApplication {
 
 	public static void main(String[] args) {
+		System.out.println("CarrybasarApplication.main()");
 		SpringApplication.run(CarrybasarApplication.class, args);
 	}
 
