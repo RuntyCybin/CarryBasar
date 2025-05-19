@@ -15,6 +15,9 @@
     if (roles.includes("USER") && roles.includes("TRANSPORTER")) {
         console.log("ROL USER and TRANSPORTER");
 
+        const descripcionDashboard = document.getElementById("descDashboard");
+        descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span>${username}</span> selecciona algun order para llevar.</p>`;
+
         // mostramos orders que se pueden llevar
         fetch('/v1/api/order/all', {
             headers: {
