@@ -33,27 +33,51 @@
 
     <header class="bg-dark text-white text-center p-3">
         <nav>
-            <a href="index.html" class="text-white m-2">Inicio</a>
+            <a href="dashboard.html" class="text-white m-2">Dashboard</a>
             <a href="about.html" class="text-white m-2">Sobre mí</a>
             <a href="contact.html" class="text-white m-2">Contacto</a>
         </nav>
     </header>
     <main class="container my-5">
-        <h1>Dashboard</h1>
-        <p>Listado de contratos para <span id="username"></span>.</p>
-        <div class="list-group mt-4" id="ordersList">
-            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                <img src="https://github.com/twbs.png" alt="" width="32" height="32"
-                    class="rounded-circle flex-shrink-0">
-                <div class="d-flex gap-2 w-100 justify-content-between">
-                    <div>
-                        <h6 class="mb-0">List group item heading</h6>
-                        <p class="mb-0 opacity-75" id="volume">Some placeholder content in a paragraph.</p>
-                        <p class="mb-0 opacity-75" id="desc">Some placeholder content in a paragraph.</p>
-                    </div>
-                    <small class="opacity-50 text-nowrap" id="date">now</small>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h1>Dashboard</h1>
                 </div>
-            </a>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p id="descDashboard">Listado de contratos para <span id="username"></span>.</p>
+                </div>
+                <div class="col" style="text-align: right;">
+                    <div class="btn-group btn-group-lg" role="group" aria-label="Large button group"
+                        id="salirCrearBtns">
+                        <button type="button" class="btn btn-outline-primary">Salir</button>
+                        <!-- <button type="button" class="btn btn-outline-primary">Middle</button> -->
+                        <a href="create-order.html" type="button" class="btn btn-outline-primary">Crear pedido</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="list-group mt-4" id="ordersList">
+                        <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3"
+                            aria-current="true">
+                            <img src="https://github.com/twbs.png" alt="" width="32" height="32"
+                                class="rounded-circle flex-shrink-0">
+                            <div class="d-flex gap-2 w-100 justify-content-between">
+                                <div>
+                                    <h6 class="mb-0">List group item heading</h6>
+                                    <p class="mb-0 opacity-75" id="volume">Some placeholder content in a paragraph.</p>
+                                    <p class="mb-0 opacity-75" id="desc">Some placeholder content in a paragraph.</p>
+                                </div>
+                                <small class="opacity-50 text-nowrap" id="date">now</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </main>
     <footer class="bg-dark text-white text-center p-3">
