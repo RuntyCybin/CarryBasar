@@ -15,8 +15,16 @@
     if (roles.includes("USER") && roles.includes("TRANSPORTER")) {
         console.log("ROL USER and TRANSPORTER");
 
+        // texto del usuario tipo TRANSPORTER
         const descripcionDashboard = document.getElementById("descDashboard");
         descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span>${username}</span> selecciona algun order para llevar.</p>`;
+
+        const btnsCerrarCrear = document.getElementById("salirCrearBtns");
+        btnsCerrarCrear.innerHTML = `
+        <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
+            <button type="button" class="btn btn-outline-primary">Salir</button>
+        </div>
+        `;
 
         // mostramos orders que se pueden llevar
         fetch('/v1/api/order/all', {
@@ -85,8 +93,17 @@
     } else if (roles.includes("USER") && roles.includes("CARRY")) {
         console.log("ROL USER and CARRY");
 
+        // texto del usuario tipo CARRY
         const descripcionDashboard = document.getElementById("descDashboard");
         descripcionDashboard.innerHTML = `<p id="descDashboard">Listado de orders creados por <span>${username}</span>.</p>`;
+
+        const btnsCerrarCrear = document.getElementById("salirCrearBtns");
+        btnsCerrarCrear.innerHTML = `
+        <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
+            <button type="button" class="btn btn-outline-primary">Salir</button>
+            <a href="create-order.html" type="button" class="btn btn-outline-primary">Crear pedido</a>
+        </div>
+        `;
 
         // mostramos orders que tiene el usuario creados
         fetch('/v1/api/order/my-orders', {
