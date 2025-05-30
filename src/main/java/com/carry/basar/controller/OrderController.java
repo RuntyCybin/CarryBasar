@@ -31,7 +31,6 @@ public class OrderController {
 
     @GetMapping("/{userId}")
     public Flux<OrderDto> getUserOrders(@PathVariable Long userId) {
-        System.out.println("User ID1: " + userId);
         return orderService.getOrdersByUserId(userId);
     }
 
