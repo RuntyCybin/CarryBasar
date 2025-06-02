@@ -11,6 +11,8 @@ public interface AcceptedOrdersRepository extends ReactiveCrudRepository<Accepte
 
   //Flux<AcceptedOrders> findByUserId(Long userId);
 
+  Mono<AcceptedOrders> findByOrderIdAndUserId(Long orderId, Long userId);
+
   Mono<AcceptedOrders> save(AcceptedOrders acceptedOrders);
 
   //Mono<AcceptedOrders> deleteById(AcceptedOrderPk acceptedOrderPk);

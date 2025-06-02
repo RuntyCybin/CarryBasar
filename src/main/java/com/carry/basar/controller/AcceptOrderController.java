@@ -3,10 +3,7 @@ package com.carry.basar.controller;
 import com.carry.basar.model.AcceptedOrders;
 import com.carry.basar.model.dto.accepted_order.AcceptOrderRequest;
 import com.carry.basar.service.AcceptOrderService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -24,5 +21,10 @@ public class AcceptOrderController {
   @PostMapping("/create")
   public Mono<AcceptedOrders> acceptOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
     return acceptOrderService.createOrder(acceptOrderRequest);
+  }
+
+  @GetMapping("/get")
+  public Mono<AcceptedOrders> getAcceptedOrderByPK(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
+    return acceptOrderService.getAcceptedOrderByPk(acceptOrderRequest);
   }
 }

@@ -66,4 +66,21 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                       // o si teniéndolo, la orden no se pudo encontrar o procesar.
             });
   }
+
+  @Override
+  public Mono<AcceptedOrders> getAcceptedOrderByPk(AcceptOrderRequest request) {
+    // TODO: 1.encontrar al usuario con el id proporcionado
+    return this.userRepository.findById(request.getUserId())
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+            .flatMap(user -> {
+              // TODO: 2.encontrar el order con el id proporcionado
+              return orderRepository.findById(request.getOrderId())
+                      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
+                      .flatMap(order -> {
+                        // TODO: 3.encontrar el acceptedOrder con los ids de user y order proporcionados
+                        return acceptedOrdersRepository.findByOrderIdAndUserId(order.getId(), user.getId())
+                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Accepted order not found")));
+                      });
+            });
+  }
 }

@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface AcceptOrderService {
   Mono<AcceptedOrders> createOrder(AcceptOrderRequest request);
+  Mono<AcceptedOrders> getAcceptedOrderByPk(AcceptOrderRequest request);
 }
