@@ -13,4 +13,6 @@ public interface RoleService {
     Mono<Role> registerRole(RoleDto role);
 
     Mono<RoleDto> updateRole(UpdateRoleRequest request);
+
+    Mono<String> deleteRole(String roleName, String username);
 }
