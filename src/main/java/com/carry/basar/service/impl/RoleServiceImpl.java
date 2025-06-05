@@ -87,13 +87,10 @@ public class RoleServiceImpl implements RoleService {
                                 .flatMap(role -> {
                                   // comprobamos que el usuario es administrador
                                   if (role.getName().equals("ADMIN")) {
-
-                                    // TODO: eliminar el rol
                                     return this.roleRepository.findByName(roleNameToErase)
                                             .switchIfEmpty(Mono.error(new ResponseStatusException(
                                                     HttpStatus.NOT_FOUND, "Error, role not found")))
                                             .flatMap(this.roleRepository::delete).then(Mono.just("Role deleted successfully"));
-
                                   }
                                   return Mono.empty();
                                 });
