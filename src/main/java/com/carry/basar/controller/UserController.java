@@ -3,6 +3,7 @@ package com.carry.basar.controller;
 import com.carry.basar.model.dto.auth.AuthRequest;
 import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
+import com.carry.basar.model.dto.user.ChangePwdNotLoggedUserRequest;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.service.UserService;
 
@@ -33,6 +34,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
         return service.register(user);
+    }
+
+    @PostMapping("/changePassword")
+    public Mono<String> changePwd(@Valid @RequestBody ChangePwdNotLoggedUserRequest request) {
+        // TODO: call an apropiate service to change the password
+        return Mono.just("Under construction");
     }
 
     @GetMapping("/check")
