@@ -5,10 +5,7 @@ import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
-import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.ListUsersResponse;
-import com.carry.basar.model.dto.user.UpdateUserRequest;
-import com.carry.basar.model.dto.user.UpdateUserResponse;
+import com.carry.basar.model.dto.user.*;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
@@ -156,6 +153,11 @@ public class UserServiceImpl implements UserService {
               }
               return Flux.fromIterable(list);
             });
+  }
+
+  @Override
+  public Mono<String> changePwd(ChangePwdNotLoggedUserRequest request) {
+    return null;
   }
 
 
