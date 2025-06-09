@@ -155,11 +155,6 @@ public class UserServiceImpl implements UserService {
             });
   }
 
-  @Override
-  public Mono<String> changePwd(ChangePwdNotLoggedUserRequest request) {
-    return null;
-  }
-
 
   private Mono<User> assignRolesToUser(User user, Set<String> roles) {
     return userRepository.save(user).flatMap(savedUser -> {
