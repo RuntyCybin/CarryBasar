@@ -21,4 +21,6 @@ public interface UserService {
 
   Flux<ListUsersResponse> listAllUsers();
 
+  Mono<String> changePwd(ChangePwdNotLoggedUserRequest request);
+
 }

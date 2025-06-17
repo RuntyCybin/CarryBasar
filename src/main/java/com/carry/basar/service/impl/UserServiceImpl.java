@@ -9,6 +9,7 @@ import com.carry.basar.model.dto.user.*;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
+import com.carry.basar.service.EmailService;
 import com.carry.basar.service.UserRoleService;
 import com.carry.basar.service.UserService;
 import com.carry.basar.utils.Utils;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
   private final UserRolRepository userRolRepository;
   private final UserRoleService userRoleService;
   private final Utils utils;
+  private final EmailService emailService;
 
 
   public UserServiceImpl(UserRepository userRepository,
@@ -38,7 +40,7 @@ public class UserServiceImpl implements UserService {
                          RoleRepository roleRepository,
                          UserRolRepository userRolRepository,
                          Utils utils,
-                         UserRoleService userRoleService) {
+                         UserRoleService userRoleService, EmailService emailService) {
     this.userRepository = userRepository;
     this.jwtUtil = jwtUtil;
     this.passwordEncoder = passwordEncoder;
@@ -46,6 +48,7 @@ public class UserServiceImpl implements UserService {
     this.userRolRepository = userRolRepository;
     this.utils = utils;
     this.userRoleService = userRoleService;
+    this.emailService = emailService;
   }
 
   @Override
@@ -152,6 +155,25 @@ public class UserServiceImpl implements UserService {
                 return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found"));
               }
               return Flux.fromIterable(list);
+            });
+  }
+
+  @Override
+  public Mono<String> changePwd(ChangePwdNotLoggedUserRequest request) {
+    // find a user by his email
+    return userRepository.findByEmail(request.getTo())
+            .doOnSubscribe(sub -> System.out.println("🔍 Buscando usuario con email: " + request.getTo()))
+            .doOnNext(user -> System.out.println("✅ Usuario encontrado: " + user.getEmail()))
+            .doOnError(error -> System.out.println("❌ Error al buscar usuario: " + error.getMessage()))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found")))
+            .flatMap(foundUser -> {
+              foundUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+              return userRepository.save(foundUser)
+                      .doOnSuccess(savedUser -> {
+                        System.out.println("🔒 Contraseña actualizada para: " + savedUser.getEmail());
+                        emailService.sendAsync(request.getTo(), request.getSubject(), request.getNewPassword());
+                      })
+                      .then(Mono.just("Password changed successfully"));
             });
   }
 
