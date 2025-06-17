@@ -4,26 +4,19 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 public class ChangePwdNotLoggedUserRequest {
-
+  private String newPassword;
   @NotBlank(message = "Email is mandatory")
   @Email(message = "Email should be valid")
-  private String email;
-  private String newPassword;
+  private String to;
+  private String subject;
 
   public ChangePwdNotLoggedUserRequest() {
   }
 
-  public ChangePwdNotLoggedUserRequest(String email, String newPassword) {
-    this.email = email;
+  public ChangePwdNotLoggedUserRequest(String newPassword, String to, String subject) {
     this.newPassword = newPassword;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
+    this.to = to;
+    this.subject = subject;
   }
 
   public String getNewPassword() {
@@ -34,4 +27,19 @@ public class ChangePwdNotLoggedUserRequest {
     this.newPassword = newPassword;
   }
 
+  public String getTo() {
+    return to;
+  }
+
+  public void setTo(String to) {
+    this.to = to;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public void setSubject(String subject) {
+    this.subject = subject;
+  }
 }
