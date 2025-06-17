@@ -9,17 +9,21 @@ spring:
     properties:
       schema: transportsschema
   mail:
-    host: smtp.gmail.com
+    host: smtp.mailersend.net
     port: 587
-    username: runtycybin@gmail.com
-    password: 0RtGWV3j3iEQdudEBhvh
+    username: MS_jiVq6W@test-yxj6lj9zpz74do2r.mlsender.net
+    password: mssp.9pvKbPR.0p7kx4xn3j8g9yjr.ZoBAJFZ
     protocol: smtp
     properties:
       mail:
+        debug: true
         smtp:
           auth: true
-          starttls:
-            enable: true
+          starttls.enable: true
+          # Opcional: evita warnings de certificado
+          ssl.trust: smtp.mailersend.net
+      # Solo en desarrollo: log completo del diálogo SMTP
+      # mail.properties.mail.debug: true
 
 server:
   port: 8080
