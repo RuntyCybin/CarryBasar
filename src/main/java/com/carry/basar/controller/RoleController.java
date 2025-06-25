@@ -2,12 +2,14 @@ package com.carry.basar.controller;
 
 import com.carry.basar.model.Role;
 import com.carry.basar.model.dto.RoleDto;
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.role.UpdateRoleRequest;
 import com.carry.basar.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -43,11 +45,19 @@ public class RoleController {
 
     @DeleteMapping("/delete")
     public Mono<String> deleteRole(@RequestBody RoleDto roleName) {
-
         return ReactiveSecurityContextHolder.getContext()
                 .flatMap(ctx -> Mono.just(ctx.getAuthentication()))
                 .filter(auth -> auth != null && auth.isAuthenticated())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")))
                 .flatMap(authUser -> service.deleteRole(roleName.getName(), authUser.getName()));
+    }
+
+    @GetMapping("/listRoles")
+    public Flux<RolesListResponse> listRoles() {
+        return ReactiveSecurityContextHolder.getContext()
+                .flatMap(ctx -> Mono.just(ctx.getAuthentication()))
+                .filter(auth -> auth != null && auth.isAuthenticated())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")))
+                .flatMapMany(authUser -> service.listAllRoles(authUser.getName()));
     }
 }
