@@ -2,6 +2,7 @@ package com.carry.basar.service.impl;
 
 import com.carry.basar.model.Role;
 import com.carry.basar.model.dto.RoleDto;
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.role.UpdateRoleRequest;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
@@ -10,6 +11,7 @@ import com.carry.basar.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -101,6 +103,17 @@ public class RoleServiceImpl implements RoleService {
             .onErrorResume(ResponseStatusException.class, Mono::error)
             .onErrorResume(e -> {
               return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting role: " + e.getMessage()));
+            });
+  }
+
+  @Override
+  public Flux<RolesListResponse> listAllRoles(String username) {
+    // compruebo que el usuario existe
+    return userRepository.findByName(username)
+            .flatMapMany(user -> {
+              return this.roleRepository
+                      .findAll()
+                      .map(role -> new RolesListResponse(role.getName()));
             });
   }
 }
