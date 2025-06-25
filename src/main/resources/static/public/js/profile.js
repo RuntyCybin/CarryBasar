@@ -47,28 +47,55 @@
 
     });
 
+    // ............................................................................
+    // Event listener para el SUBMIT del formulario de UPDATE los datos del USUARIO
     document.getElementById("profileForm").addEventListener('submit', function (event) {
         event.preventDefault(); // evita que el formulario se envíe por defecto
         console.log("ACTUALIZAMOS EL PERFIL");
 
         const selectedRoles = Array.from(rolesSelect.selectedOptions).map(opt => opt.value);
         const formData = {
-            nombre: this.nombre.value,
+            username: this.nombre.value,
             email: this.email.value,
-            password: this.password.value,
-            roles: selectedRoles
+            //password: this.password.value,
+            role: selectedRoles
         };
         console.log("Datos enviados:", formData);
-        // Aquí puedes hacer fetch PUT/POST al backend
+        // PUT al backend
+        fetch('/v1/api/user/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(async res => {
+                // Gestión del 401/403 (no autorizado)
+                if (!res) throw new Error('No autorizado');
 
+                // Todo correcto → devolvemos JSON
+                return res.json();
+            })
+            .then(data => {
+                setTimeout(() => {
+                    sessionStorage.clear();
+                    window.location.href = '/public/login.html';
+                }, 500);
+            })
+            .catch(err => console.error(err));
     });
+    // ............................................................................
 
-    // Logout
+
+
+    // ............................................................................
+    // LOGOUT
     document.getElementById('logoutBtn').addEventListener('click', () => {
         sessionStorage.clear();
         window.location.href = '/public/login.html';
     });
-
+    // ............................................................................
 
 
     function generateAllRoles(data) {
