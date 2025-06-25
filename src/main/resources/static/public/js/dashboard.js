@@ -68,8 +68,8 @@
                     <div class="d-flex gap-2 w-100 justify-content-between">
                     <div>
                         <h6 class="mb-0">Pedido ${i + 1}</h6>
-                        <p class="mb-0 opacity-75">${order.description}</p>
-                        <p class="mb-0 opacity-75">Volumen: ${order.volume}</p>
+                        <p class="mb-0 opacity-75" id="desc">${order.description}</p>
+                        <p class="mb-0 opacity-75" id="volume">Volumen: ${order.volume}</p>
                     </div>
                     <small class="opacity-50 text-nowrap">${new Date(order.createdAt).toLocaleString()}</small>
                     </div>
