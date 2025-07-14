@@ -2,6 +2,7 @@ package com.carry.basar.service;
 
 import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserRequest;
@@ -23,5 +24,7 @@ public interface UserService {
   Mono<String> removeUser(String username);
 
   Flux<ListUsersResponse> listAllUsers();
+
+  Flux<RolesListResponse> listAllRolesByUserName(String username);
 
 }
