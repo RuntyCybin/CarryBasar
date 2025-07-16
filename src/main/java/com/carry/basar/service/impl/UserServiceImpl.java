@@ -5,6 +5,7 @@ import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserRequest;
@@ -155,6 +156,21 @@ public class UserServiceImpl implements UserService {
                 return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No users found"));
               }
               return Flux.fromIterable(list);
+            });
+  }
+
+  @Override
+  public Flux<RolesListResponse> listAllRolesByUserName(String username) {
+    return userRepository.findByName(username)
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found for username: " + username)))
+            .doOnNext(user -> System.out.println("User id: " + user.getId()))
+            .doOnError(error -> System.out.println("Error: " + error.getMessage()))
+            .flatMapMany(user -> {
+              return userRolRepository.findByUserId(user.getId())
+                      .flatMap(userRol -> {
+                        return roleRepository.findById(userRol.getRoleId())
+                                .map(role -> new RolesListResponse(role.getName()));
+                      });
             });
   }
 
