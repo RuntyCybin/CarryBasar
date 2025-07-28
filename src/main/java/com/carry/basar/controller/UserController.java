@@ -4,6 +4,8 @@ import com.carry.basar.model.dto.auth.AuthRequest;
 import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
+import com.carry.basar.model.dto.user.RecoverPwdRequest;
+import com.carry.basar.model.dto.user.RecoverPwdResponse;
 import com.carry.basar.service.UserService;
 
 import javax.validation.Valid;
@@ -42,6 +44,11 @@ public class UserController {
                 .filter(auth -> auth != null && auth.isAuthenticated())
                 .map(auth -> ResponseEntity.ok().<Void>build())
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @PostMapping("/recoverpwd")
+    public Mono<RecoverPwdResponse> changePassword(@Valid @RequestBody RecoverPwdRequest request) {
+        return service.changeUserPassword(request);
     }
     
 }
