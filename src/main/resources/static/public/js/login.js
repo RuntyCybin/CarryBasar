@@ -1,6 +1,6 @@
 window.addEventListener("DOMContentLoaded", async () => {
     const token = sessionStorage.getItem("token");
-    console.log("0.token: " + token);
+    console.log("login: 0.token: " + token);
 
     // Check token
     if (token) {

@@ -15,9 +15,13 @@
     if (roles.includes("USER") && roles.includes("TRANSPORTER")) {
         console.log("ROL USER and TRANSPORTER");
 
+        // indicador del rol en la barra de navegacion
+        const role_nav_span = document.getElementById("roleUser") ;
+        role_nav_span.textContent = "[TRANSPORTISTA]";
+
         // texto del usuario tipo TRANSPORTER
         const descripcionDashboard = document.getElementById("descDashboard");
-        descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span>${username}</span> selecciona algun order para llevar.</p>`;
+        descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span style='bold:100'>${username}</span> selecciona algun order para llevar.</p>`;
 
         const btnsCerrarCrear = document.getElementById("salirCrearBtns");
         btnsCerrarCrear.innerHTML = `
@@ -92,6 +96,10 @@
 
     } else if (roles.includes("USER") && roles.includes("CARRY")) {
         console.log("ROL USER and CARRY");
+
+        // indicador del rol en la barra de navegacion
+        const role_nav_span = document.getElementById("roleUser") ;
+        role_nav_span.textContent = "[CLIENTE]";
 
         // texto del usuario tipo CARRY
         const descripcionDashboard = document.getElementById("descDashboard");
