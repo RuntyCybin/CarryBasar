@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
                       .collectList()
                       .flatMap(roleNames -> {
                         String tkn = jwtUtil.generateToken(user.getName());
-                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames);
+                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames, user.getId());
                         return Mono.just(response);
                       });
             })
@@ -184,7 +184,8 @@ public class UserServiceImpl implements UserService {
       System.out.println("User saved: " + savedUser.getId());
 
       // 2. Buscar roles de forma reactiva
-      return Flux.fromIterable(roles).flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
+      return Flux.fromIterable(roles)
+              .flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
                 if (role == null || role.getRolId() == null) {
                   return Mono.error(new ResponseStatusException(
                           HttpStatus.NOT_FOUND, "El rol " + roleName + " no existe"));
