@@ -7,12 +7,29 @@ public class AuthResponse {
   private String username;
   private String email;
   private List<String> roles;
+  private Long userid;
 
   public AuthResponse(String jwt, String username, String email, List<String> roles) {
     this.jwt = jwt;
     this.username = username;
     this.email = email;
     this.roles = roles;
+  }
+
+  public AuthResponse(String jwt, String username, String email, List<String> roles, Long userid) {
+    this.jwt = jwt;
+    this.username = username;
+    this.email = email;
+    this.roles = roles;
+    this.userid = userid;
+  }
+
+  public Long getUserid() {
+    return userid;
+  }
+
+  public void setUserid(Long userid) {
+    this.userid = userid;
   }
 
   public String getJwt() {
