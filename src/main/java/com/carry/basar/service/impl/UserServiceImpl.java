@@ -221,4 +221,11 @@ public class UserServiceImpl implements UserService {
                       .map(savedUser -> new RecoverPwdResponse(savedUser.getName(), savedUser.getPassword()));
             });
   }
+
+  @Override
+  public Flux<RolesListResponse> listPublicRoles() {
+    return this.roleRepository.findAll()
+            .filter(role -> !role.getName().equals("ADMIN"))
+            .map(role -> new RolesListResponse(role.getName()));
+  }
 }
