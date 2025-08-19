@@ -26,4 +26,6 @@ public interface UserService {
 
   Mono<RecoverPwdResponse> changeUserPassword(RecoverPwdRequest request);
 
+  Flux<RolesListResponse> listPublicRoles();
+
 }
