@@ -1,11 +1,8 @@
 package com.carry.basar.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.carry.basar.model.dto.order.GetOrderResponse;
+import com.carry.basar.model.dto.order.RemoveOrderDtoResponse;
+import org.springframework.web.bind.annotation.*;
 
 import com.carry.basar.model.Order;
 import com.carry.basar.model.dto.OrderDto;
@@ -29,7 +26,7 @@ public class OrderController {
         return orderService.createOrder(orderDto);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/userid/{userId}")
     public Flux<OrderDto> getUserOrders(@PathVariable Long userId) {
         return orderService.getOrdersByUserId(userId);
     }
@@ -42,5 +39,15 @@ public class OrderController {
     @GetMapping("/all")
     public Flux<Order> getAllOrders() {
         return orderService.getAllOrders();
+    }
+
+    @GetMapping("/{orderId}")
+    public Mono<GetOrderResponse> getOrderById(@PathVariable Long orderId) {
+        return orderService.getOrderById(orderId);
+    }
+
+    @DeleteMapping("/delete/{orderId}")
+    public Mono<RemoveOrderDtoResponse> removeOrderById(@PathVariable Long orderId) {
+        return orderService.removeOrderById(orderId);
     }
 }
