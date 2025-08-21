@@ -13,7 +13,5 @@ public interface AcceptedOrdersRepository extends ReactiveCrudRepository<Accepte
 
   Mono<AcceptedOrders> findByOrderIdAndUserId(Long orderId, Long userId);
 
-  Mono<AcceptedOrders> save(AcceptedOrders acceptedOrders);
-
   //Mono<AcceptedOrders> deleteById(AcceptedOrderPk acceptedOrderPk);
 }
