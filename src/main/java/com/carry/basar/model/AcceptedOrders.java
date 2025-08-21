@@ -13,7 +13,7 @@ public class AcceptedOrders {
   @Column("userid")
   private Long userId;
 
-  @Column("orderid")
+  @Column("acceptedorderid")
   private Long orderId;
 
   @Column("createdAt")
