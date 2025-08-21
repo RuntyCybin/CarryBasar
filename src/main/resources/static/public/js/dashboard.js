@@ -59,11 +59,11 @@
                 // iteramos el data
                 for (let i = 0; i < data.length; i++) {
                     const order = data[i];
-                    console.log(`Pedido ${i + 1}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}`);
+                    console.log(`Pedido ${order.id}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}`);
 
-                    const item = document.createElement("a");
-                    item.href = "accept-order.html";
-                    sessionStorage.setItem('accepted_order_id', order.id);
+                    const item = document.createElement("div");
+                    //item.href = "accept-order.html";
+                    
                     item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
 
                     item.innerHTML = `
@@ -71,13 +71,13 @@
                         class="rounded-circle flex-shrink-0">
                     <div class="d-flex gap-2 w-100 justify-content-between">
                     <div>
-                        <h6 class="mb-0">Pedido ${i + 1}</h6>
-                        <p class="mb-0 opacity-75" id="desc">${order.description}</p>
-                        <p class="mb-0 opacity-75" id="volume">Volumen: ${order.volume}</p>
+                        <h6 class="mb-0" id="desc">${order.description}</h6>
+                        <p class="mb-0 opacity-75">Identificador pedido: ${order.id}</p>
+                        <p class="mb-0 opacity-75" id="volume">Volumen: ${order.vol}</p>
                     </div>
-                    <small class="opacity-50 text-nowrap">${new Date(order.createdAt).toLocaleString()}</small>
-                    </div>
-                    `;
+                    <input type="hidden" id="orderId" value="${order.id}">
+                    <button type="button" id="aceptarBtn" onclick="aceptarOrder('${order.id}')" class="btn btn-outline-success">Aceptar</button> 
+                    <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.orderDate).toLocaleString()}</small>`;
 
                     listContainer.appendChild(item);
                 }
@@ -118,6 +118,7 @@
                     'Authorization': 'Bearer ' + token
                 }
             }).then(async res => {
+                console.log("STATUS: " + res.status);
 
                 // Gestión del 500
                 if (res.status == 500) {
@@ -127,38 +128,64 @@
                     throw new Error(errorMsg);
                 }
 
-                // Gestión del 401/403 (no autorizado)
-                if (!res.ok) throw new Error('No autorizado');
+                // Gestión del 400 (no se han recogido orders)
+                if (res.status === 400) {
+                    console.log("No hay orders creados por el usuario");
 
-                // Todo correcto → devolvemos JSON
-                return res.json();
-
-            }).then(data => {
-                console.log("RESPONSE: " + JSON.stringify(data, null, 2));
-                const listContainer = document.getElementById("ordersList");
-                listContainer.innerHTML = ""; // Limpiar contenido previo
-                // iteramos el data
-                for (let i = 0; i < data.length; i++) {
-                    const order = data[i];
-                    console.log(`Pedido ${i + 1}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}`);
-
-                    const item = document.createElement("a");
-                    item.href = "#";
-                    item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
-
+                    const listContainer = document.getElementById("ordersList");
+                    listContainer.innerHTML = ""; // Limpiar contenido previo
+                    const item = document.createElement("span");
+                    item.className = "no-items-message";
                     item.innerHTML = `
-                        <img src="https://github.com/twbs.png" alt="" width="32" height="32"
-                            class="rounded-circle flex-shrink-0">
-                        <div class="d-flex gap-2 w-100 justify-content-between">
                         <div>
-                            <h6 class="mb-0">Pedido ${i + 1}</h6>
-                            <p class="mb-0 opacity-75">${order.description}</p>
-                            <p class="mb-0 opacity-75">Volumen: ${order.volume}</p>
-                        </div>
-                        <small class="opacity-50 text-nowrap">${new Date(order.createdAt).toLocaleString()}</small>
+                            <h6 class="mb-0">NO TIENE ORDENES CREADAS</h6>
                         </div>`;
 
                     listContainer.appendChild(item);
+                }
+
+                // No autorizado
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error('No autorizado');
+                }
+
+                // Todo correcto
+                if (res.status === 200) {
+                    console.log("Orders obtenidos correctamente");
+                    res.json().then(data => {
+                        console.log("RESPONSE: " + JSON.stringify(data, null, 2));
+                        const listContainer = document.getElementById("ordersList");
+                        listContainer.innerHTML = ""; // Limpiar contenido previo
+                        // iteramos el res
+                        for (let i = 0; i < data.length; i++) {
+                            const order = data[i];
+                            console.log(`Pedido ${i + 1}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}, con id ${order.orderId}`);
+
+                            const item = document.createElement("a");
+                            item.href = "#";
+                            item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
+
+                            item.innerHTML = `
+                            <img src="https://github.com/twbs.png" alt="" width="32" height="32"
+                                class="rounded-circle flex-shrink-0">
+                            <div class="d-flex gap-2 w-100 justify-content-between">
+                            <div>
+                                <h6 class="mb-0" id="desc">${order.description}</h6>
+                                <p class="mb-0 opacity-75">Identificador pedido: ${order.orderId}</p>
+                                <p class="mb-0 opacity-75">Volumen: ${order.volume}</p>
+                            </div>
+                            <input type="hidden" id="orderId" value="${order.orderId}">
+                            <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.createdAt).toLocaleString()}</small>
+                            <button type="button" id="eliminarBtn" onclick="eliminarOrder('${order.orderId}')" class="btn btn-outline-danger">Eliminar</button> 
+                            </div>`;
+
+                            listContainer.appendChild(item);
+                        }
+                    }).catch(err => {
+                        console.error("Error parsing JSON:", err);
+                    });
+                    // Todo correcto → devolvemos JSON
+                    // return res.json();
                 }
             }).catch(err => {
                 console.error(err);
@@ -174,6 +201,77 @@
         } else if (roles.includes("ADMIN")) {
             window.location.href = '/public/dashboardAdmin.html';
             return;
+        }
+    }
+
+
+    // Funcion para eliminar orders de clientes
+    window.eliminarOrder = function eliminarOrder(idOrder) {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert('Token no válido');
+            return;
+        }
+        if (confirm('¿Estás seguro de eliminar este order?')) {
+            fetch(`/v1/api/order/delete/${idOrder}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            }).then(async res => {
+                if (!res.ok) {
+                    const errorBody = await res.json().catch(() => ({}));
+                    const errorMsg = errorBody.error || 'Error eliminando el order';
+                    throw new Error(errorMsg);
+                }
+                alert('Order eliminado correctamente.');
+                window.location.reload();
+            }).catch(err => {
+                console.error(err);
+                alert('Error: ' + err.message);
+            });
+        }
+    }
+
+
+    // Funcion para aceptar orders de transportistas
+    window.aceptarOrder = function aceptarOrder(orderId) {
+        const token = sessionStorage.getItem('token');
+        const userId = sessionStorage.getItem('userId');
+        sessionStorage.setItem('accepted_order_id', orderId);
+
+        if (!token || !userId) {
+            alert('Sesión inválida. Inicie sesión nuevamente.');
+            window.location.href = '/public/login.html';
+            return;
+        }
+
+        if (confirm('¿Estás seguro de aceptar este order?')) {
+            fetch(`/v1/api/acceptOrder/create`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                // TODO: cambiar fecha por las recogidas de los date time pickers
+                body: JSON.stringify({ orderId, userId, shipAt: new Date().toISOString(), shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() })
+            }).then(async res => {
+                if (res.status === 200) {
+                    alert('Order aceptado correctamente.');
+                    //window.location.href = '/public/transport-orders.html';
+                    window.location.reload();
+                } else if (res.status === 404) {
+                    throw new Error('Order no encontrado');
+                } else {
+                    const errorBody = await res.json().catch(() => ({}));
+                    const errorMsg = errorBody.error || 'Error al aceptar el order';
+                    throw new Error(errorMsg);
+                }
+            }).catch(err => {
+                console.error(err);
+                alert('Error: ' + err.message);
+            });
         }
     }
 
