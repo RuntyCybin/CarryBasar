@@ -20,15 +20,15 @@
 
             // texto del usuario tipo TRANSPORTER
             const descripcionDashboard = document.getElementById("descDashboard");
-            descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span style='bold:100'>${username}</span> selecciona algun order para llevar.</p>`;
+            descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span style='font-weight: 700;'>${username}</span> selecciona algun order para llevar.</p>`;
 
             // menu de botones superior derecha
             const btnsCerrarCrear = document.getElementById("salirCrearBtns");
             btnsCerrarCrear.innerHTML = `
             <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
+                <button type="button" id="acceptedOrderstBtn" class="btn btn-outline-primary">Ordenes aceptadas</button>
                 <button type="button" id="logoutBtn" class="btn btn-outline-primary">Salir</button>
-            </div>
-            `;
+            </div>`;
 
             // mostramos orders que se pueden llevar
             fetch('/v1/api/order/all', {
@@ -59,11 +59,11 @@
                 // iteramos el data
                 for (let i = 0; i < data.length; i++) {
                     const order = data[i];
-                    console.log(`Pedido ${order.id}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}`);
+                    console.log(`Pedido ${order.id}: ${order.description}, volumen ${order.vol}, creado el ${order.orderDate}`);
 
                     const item = document.createElement("div");
                     //item.href = "accept-order.html";
-                    
+
                     item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
 
                     item.innerHTML = `
@@ -76,7 +76,7 @@
                         <p class="mb-0 opacity-75" id="volume">Volumen: ${order.vol}</p>
                     </div>
                     <input type="hidden" id="orderId" value="${order.id}">
-                    <button type="button" id="aceptarBtn" onclick="aceptarOrder('${order.id}')" class="btn btn-outline-success">Aceptar</button> 
+                    <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="btn btn-outline-success">Aceptar</button> 
                     <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.orderDate).toLocaleString()}</small>`;
 
                     listContainer.appendChild(item);
@@ -109,8 +109,7 @@
             <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
                 <button type="button" id="logoutBtn" class="btn btn-outline-primary">Salir</button>
                 <a href="create-order.html" type="button" class="btn btn-outline-primary">Crear pedido</a>
-            </div>
-            `;
+            </div>`;
 
             // mostramos orders que tiene el usuario creados
             fetch('/v1/api/order/my-orders', {
@@ -236,10 +235,11 @@
 
 
     // Funcion para aceptar orders de transportistas
-    window.aceptarOrder = function aceptarOrder(orderId) {
+    window.aceptarOrder = function aceptarOrder(order) {
+        const { id, description, vol, orderDate } = order;
         const token = sessionStorage.getItem('token');
         const userId = sessionStorage.getItem('userId');
-        sessionStorage.setItem('accepted_order_id', orderId);
+        sessionStorage.setItem('accepted_order_id', id);
 
         if (!token || !userId) {
             alert('Sesión inválida. Inicie sesión nuevamente.');
@@ -255,7 +255,14 @@
                     'Content-Type': 'application/json'
                 },
                 // TODO: cambiar fecha por las recogidas de los date time pickers
-                body: JSON.stringify({ orderId, userId, shipAt: new Date().toISOString(), shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() })
+                body: JSON.stringify({ 
+                    orderId: id, 
+                    userId: userId, 
+                    shipAt: new Date().toISOString(), 
+                    shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    description: description,
+                    volumen: vol
+                })
             }).then(async res => {
                 if (res.status === 200) {
                     alert('Order aceptado correctamente.');
@@ -274,6 +281,10 @@
             });
         }
     }
+
+    document.getElementById('acceptedOrderstBtn').addEventListener('click', () => {
+        window.location.href = '/public/accept-order.html';
+    });
 
 
     // Logout
