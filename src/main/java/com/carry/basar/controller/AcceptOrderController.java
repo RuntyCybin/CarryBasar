@@ -1,9 +1,7 @@
 package com.carry.basar.controller;
 
-import com.carry.basar.model.AcceptedOrders;
 import com.carry.basar.model.dto.accepted_order.AcceptOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
-import com.carry.basar.model.dto.accepted_order.UserAcceptedOrdersRequest;
 import com.carry.basar.service.AcceptOrderService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -22,13 +20,13 @@ public class AcceptOrderController {
   }
 
   @PostMapping("/create")
-  public Mono<AcceptedOrders> acceptOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
+  public Mono<AcceptedOrderResponse> acceptOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
     return acceptOrderService.createOrder(acceptOrderRequest);
   }
 
   @GetMapping("/get")
-  public Mono<AcceptedOrders> getAcceptedOrderByPK(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
-    return acceptOrderService.getAcceptedOrderByPk(acceptOrderRequest);
+  public Mono<AcceptedOrderResponse> getAcceptedOrderByPk(@Valid @RequestParam Long userId, @Valid @RequestParam Long orderId) {
+    return acceptOrderService.getAcceptedOrderByPk(userId, orderId);
   }
 
   @GetMapping("/getAcceptedOrders/{userId}")
