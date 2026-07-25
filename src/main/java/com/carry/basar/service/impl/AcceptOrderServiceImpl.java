@@ -130,30 +130,15 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
   }
 
   @Override
-  public Mono<String> removeAcceptedOrderByPk(AcceptOrderRequest request) {
-    // 1.encontrar al usuario con la id de la request
-    return this.userRepository.findById(request.getUserId())
+  public Mono<String> removeAcceptedOrderByPk(Long orderId, Long userId) {
+    // 1. encontrar al usuario con la id de la request
+    return this.userRepository.findById(userId)
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
             .flatMap(user -> {
-              // 2.encontrar el order por id proporcionado
-              return orderRepository.findById(request.getOrderId())
-                      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
-                      .flatMap(order -> {
-                        // 3.generar el entity para la eliminacion
-                        AcceptedOrders acceptedOrders = new AcceptedOrders(
-                                request.getUserId(),
-                                request.getOrderId(),
-                                request.getShipAt(),
-                                request.getShipTo(),
-                                order.getDescription(),
-                                order.getVol()
-                        );
-                        // 4.eliminar el order y devolver "SUCCESS" si se ha eliminado correctamente
-                        return acceptedOrdersRepository.delete(acceptedOrders)
-                                .thenReturn("SUCCESS");
-                      });
+              return acceptedOrdersRepository.findByOrderIdAndUserId(orderId, userId)
+                      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Accepted Order not found")))
+                      .flatMap(acceptedOrder -> acceptedOrdersRepository.deleteByOrderIdAndUserId(orderId, userId)
+                              .thenReturn("SUCCESS"));
             });
   }
-
-
 }

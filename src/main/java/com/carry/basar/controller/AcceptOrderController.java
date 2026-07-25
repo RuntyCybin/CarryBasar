@@ -51,14 +51,14 @@ public class AcceptOrderController {
   }
 
   /**
-   * Endpoint to delete an accepted order
-   * This means that the order has been delivered
-   * @param acceptOrderRequest
-   * @return a success message
+   * Endpoint that deletes an accepted order
+   * @param orderId
+   * @param userId
+   * @return a String success message
    */
   @DeleteMapping("/delete")
-  public Mono<String> deleteAcceptedOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
-    return acceptOrderService.removeAcceptedOrderByPk(acceptOrderRequest);
+  public Mono<String> deleteAcceptedOrder(@Valid @RequestParam Long orderId, @Valid @RequestParam Long userId) {
+    return acceptOrderService.removeAcceptedOrderByPk(orderId, userId);
   }
 
 }
