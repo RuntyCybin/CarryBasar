@@ -48,24 +48,23 @@
                 } else if (data.status == 404) {
                     throw new Error('Order not found');
                 } else if (data.status == 200) {
-                    // Gestión del 401/403 (no autorizado)
                     if (!data.ok) throw new Error('No autorizado');
 
                     return data.json().then(parsedData => {
                         console.log("STATUS: " + data.status);
                         console.log("RESPONSE: " + JSON.stringify(parsedData, null, 2));
-                        console.log("Order NAME: " + parsedData.descripcion);
+                        console.log("Order NAME: " + parsedData.orderDesc);
                         const container = document.getElementById("acceptedOrderList");
                         container.innerHTML = ""; // Limpiar contenido previo
                         container.innerHTML = `
-                        <h6 class="display-5 fw-bold" id="idOrder">Orden: ${parsedData.descripcion}</h6>
+                        <h6 class="display-5 fw-bold" id="idOrder">Orden: ${parsedData.orderDesc}</h6>
                         <p class="col-md-8 fs-4" id="descOrder">Identificador de la orden: ${orderId}</p>
                         <p class="col-md-8 fs-4" id="volumeOrder">Volumen: ${parsedData.volumen}</p>
                         <p class="col-md-8 fs-4" id="userOrder">Usuario: ${parsedData.nombreUsuario}</p>
                         <small class="opacity-50 text-nowrap">${new Date(parsedData.fechaCreacion).toLocaleString()}</small>
                         <br>
                         <button class="btn btn-primary btn-lg" id="aceptarOrder" type="button" style="margin-top: 1em;">Aceptar</button>`;
-                        listContainer.appendChild(item); // TODO: arreglar
+                        listContainer.appendChild(container); // TODO: arreglar
                     });
                 }
 
@@ -82,10 +81,4 @@
             });
         }
     }
-
-
-    
-
-
-
 })();

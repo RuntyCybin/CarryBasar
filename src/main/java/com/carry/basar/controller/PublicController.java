@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -48,7 +49,7 @@ public class PublicController {
     @GetMapping("/check")
     public Mono<ResponseEntity<Void>> checkIfTokenIsValid() {
         return ReactiveSecurityContextHolder.getContext()
-                .map(ctx -> ctx.getAuthentication())
+                .map(SecurityContext::getAuthentication)
                 .filter(auth -> auth != null && auth.isAuthenticated())
                 .map(auth -> ResponseEntity.ok().<Void>build())
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());

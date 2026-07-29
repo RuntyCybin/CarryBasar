@@ -14,7 +14,9 @@
 
     // comprobamos el rol de usuario
     if (roles.includes("USER") && roles.includes("TRANSPORTER")) {
-
+        // indicador del rol en la barra de navegacion
+        const role_nav_span = document.getElementById("roleUser");
+        role_nav_span.textContent = "[TRANSPORTISTA]";
 
     } else if (roles.includes("USER") && roles.includes("CARRY")) {
 
