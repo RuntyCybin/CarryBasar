@@ -29,6 +29,7 @@
             const btnsCerrarCrear = document.getElementById("salirCrearBtns");
             btnsCerrarCrear.innerHTML = `
             <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
+                <button type="button" id="volverBtn" class="btn btn-outline-primary">Volver</button>
                 <button type="button" class="btn btn-outline-primary">Salir</button>
             </div>`;
 
@@ -53,18 +54,20 @@
                     return data.json().then(parsedData => {
                         console.log("STATUS: " + data.status);
                         console.log("RESPONSE: " + JSON.stringify(parsedData, null, 2));
-                        console.log("Order NAME: " + parsedData.orderDesc);
+
                         const container = document.getElementById("acceptedOrderList");
                         container.innerHTML = ""; // Limpiar contenido previo
-                        container.innerHTML = `
-                        <h6 class="display-5 fw-bold" id="idOrder">Orden: ${parsedData.orderDesc}</h6>
-                        <p class="col-md-8 fs-4" id="descOrder">Identificador de la orden: ${orderId}</p>
-                        <p class="col-md-8 fs-4" id="volumeOrder">Volumen: ${parsedData.volumen}</p>
-                        <p class="col-md-8 fs-4" id="userOrder">Usuario: ${parsedData.nombreUsuario}</p>
-                        <small class="opacity-50 text-nowrap">${new Date(parsedData.fechaCreacion).toLocaleString()}</small>
-                        <br>
-                        <button class="btn btn-primary btn-lg" id="aceptarOrder" type="button" style="margin-top: 1em;">Aceptar</button>`;
-                        listContainer.appendChild(container); // TODO: arreglar
+
+                        parsedData.forEach(order => {
+                            console.log("Order NAME: " + order.orderDesc);
+                            container.innerHTML += `
+                            <h6 class="display-5 fw-bold" id="idOrder">Orden: ${order.orderDesc}</h6>
+                            <p class="col-md-8 fs-4" id="descOrder">Identificador de la orden: ${order.orderId}</p>
+                            <p class="col-md-8 fs-4" id="volumeOrder">Volumen: ${order.vol}</p>
+                            <p class="col-md-8 fs-4" id="userOrder">Usuario: ${order.userId}</p>
+                            <small class="opacity-50 text-nowrap">${new Date(order.createdAt).toLocaleString()}</small>
+                            <hr>`;
+                        });
                     });
                 }
 
@@ -78,6 +81,10 @@
 
                 sessionStorage.clear();
                 window.location.href = '/public/login.html';
+            });
+
+            document.getElementById('volverBtn').addEventListener('click', () => {
+                window.location.href = '/public/dashboard.html';
             });
         }
     }
