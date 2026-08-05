@@ -46,7 +46,7 @@ public class OrderController {
         return orderService.getOrderById(orderId);
     }
 
-    @DeleteMapping("/delete/{orderId}")
+    @DeleteMapping("/{orderId}")
     public Mono<RemoveOrderDtoResponse> removeOrderById(@PathVariable Long orderId) {
         return orderService.removeOrderById(orderId);
     }

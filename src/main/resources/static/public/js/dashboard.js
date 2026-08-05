@@ -212,7 +212,7 @@
             return;
         }
         if (confirm('¿Estás seguro de eliminar este order?')) {
-            fetch(`/v1/api/order/delete/${idOrder}`, {
+            fetch(`/v1/api/order/${idOrder}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + token,
@@ -282,9 +282,12 @@
         }
     }
 
-    document.getElementById('acceptedOrderstBtn').addEventListener('click', () => {
-        window.location.href = '/public/accept-order.html';
-    });
+    const acceptedOrderstBtn = document.getElementById('acceptedOrderstBtn');
+    if (acceptedOrderstBtn) {
+        acceptedOrderstBtn.addEventListener('click', () => {
+            window.location.href = '/public/accept-order.html';
+        });
+    }
 
 
     // Logout

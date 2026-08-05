@@ -6,6 +6,7 @@ public class OrderDto {
     private String description;
     private Integer volume;
     private LocalDateTime createdAt;
+    private LocalDateTime dueDate;
     private Long orderId;
 
     public OrderDto() {
@@ -59,5 +60,13 @@ public class OrderDto {
 
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 }
