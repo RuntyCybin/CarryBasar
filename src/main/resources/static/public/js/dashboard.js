@@ -206,6 +206,34 @@
     }
 
 
+    // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
+    function showBootstrapAlert(message, duration = 10000) {
+        const alertContainer = document.getElementById('alertContainer');
+        if (!alertContainer) return;
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success fade';
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.textContent = message;
+
+        alertContainer.appendChild(alertDiv);
+
+        // se añade "show" en el siguiente frame para que la transicion de fade-in se aplique
+        requestAnimationFrame(() => alertDiv.classList.add('show'));
+
+        setTimeout(() => {
+            alertDiv.classList.remove('show'); // dispara el fade-out
+            alertDiv.addEventListener('transitionend', () => alertDiv.remove(), { once: true });
+        }, duration);
+    }
+
+    // Si venimos de una recarga tras una accion (p.ej. eliminar un order), mostramos el alert pendiente
+    const pendingAlert = sessionStorage.getItem('pendingAlert');
+    if (pendingAlert) {
+        sessionStorage.removeItem('pendingAlert');
+        showBootstrapAlert(pendingAlert);
+    }
+
     // Funcion para eliminar orders de clientes
     window.eliminarOrder = function eliminarOrder(idOrder) {
         const token = sessionStorage.getItem('token');
@@ -226,7 +254,7 @@
                     const errorMsg = errorBody.error || 'Error eliminando el order';
                     throw new Error(errorMsg);
                 }
-                alert('Order eliminado correctamente.');
+                sessionStorage.setItem('pendingAlert', 'Order removed successfully!');
                 window.location.reload();
             }).catch(err => {
                 console.error(err);
