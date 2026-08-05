@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const description = document.getElementById('description').value.trim();
             const volume = parseInt(document.getElementById('volume').value, 10);
             const createdAt = new Date().toISOString().slice(0,19);
-            //const dueDate =
+            const dueDate = document.getElementById('dueDate').value + 'T00:00:00';
             const token = sessionStorage.getItem('token');
             try {
                 const response = await fetch('/v1/api/order', {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify({ description, volume, createdAt })
+                    body: JSON.stringify({ description, volume, createdAt, dueDate })
                 });
 
                 if (!response.ok) {

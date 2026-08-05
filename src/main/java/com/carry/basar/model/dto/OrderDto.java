@@ -19,6 +19,14 @@ public class OrderDto {
         this.createdAt = createdAt;
     }
 
+    public OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt, LocalDateTime dueDate) {
+        this.orderId = orderId;
+        this.description = description;
+        this.volume = volume;
+        this.createdAt = createdAt;
+        this.dueDate = dueDate;
+    }
+
     public OrderDto(String description, Integer volume, LocalDateTime createdAt) {
         this.description = description;
         this.volume = volume;

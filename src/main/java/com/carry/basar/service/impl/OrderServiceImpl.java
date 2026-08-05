@@ -61,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
                       HttpStatus.NOT_FOUND,
                       "User not found")))
               .flatMap(user -> {
-                System.out.println("Create order - User: " + user.getEmail());
+                System.out.println("Create order - User: " + user.getEmail() + " due date: " + orderDto.getDueDate());
                 Order order = new Order();
                 order.setDescription(orderDto.getDescription());
                 order.setVol(orderDto.getVolume());
@@ -71,9 +71,11 @@ public class OrderServiceImpl implements OrderService {
                 return orderRepository.save(order)
                     .flatMap(savedOrder -> {
                       return Mono.just(new OrderDto(
+                          savedOrder.getId(),
                           savedOrder.getDescription(),
                           savedOrder.getVol(),
-                          savedOrder.getOrderDate()));
+                          savedOrder.getOrderDate(),
+                          savedOrder.getDueDate()));
                     });
               });
         });
@@ -93,7 +95,8 @@ public class OrderServiceImpl implements OrderService {
                           order.getId(),
                       order.getDescription(),
                       order.getVol(),
-                      order.getOrderDate()));
+                      order.getOrderDate(),
+                      order.getDueDate()));
             }));
   }
 

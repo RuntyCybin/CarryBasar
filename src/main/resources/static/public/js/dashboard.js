@@ -76,8 +76,9 @@
                         <p class="mb-0 opacity-75" id="volume">Volumen: ${order.vol}</p>
                     </div>
                     <input type="hidden" id="orderId" value="${order.id}">
-                    <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="btn btn-outline-success">Aceptar</button> 
-                    <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.orderDate).toLocaleString()}</small>`;
+                    <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="btn btn-outline-success">Aceptar</button>
+                    <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.orderDate).toLocaleString()}</small>
+                    <small class="opacity-50 text-nowrap"><p>Fecha límite: </p>${new Date(order.dueDate).toLocaleString()}</small>`;
 
                     listContainer.appendChild(item);
                 }
@@ -175,7 +176,8 @@
                             </div>
                             <input type="hidden" id="orderId" value="${order.orderId}">
                             <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.createdAt).toLocaleString()}</small>
-                            <button type="button" id="eliminarBtn" onclick="eliminarOrder('${order.orderId}')" class="btn btn-outline-danger">Eliminar</button> 
+                            <small class="opacity-50 text-nowrap"><p>Fecha límite: </p>${new Date(order.dueDate).toLocaleString()}</small>
+                            <button type="button" id="eliminarBtn" onclick="eliminarOrder('${order.orderId}')" class="btn btn-outline-danger">Eliminar</button>
                             </div>`;
 
                             listContainer.appendChild(item);
