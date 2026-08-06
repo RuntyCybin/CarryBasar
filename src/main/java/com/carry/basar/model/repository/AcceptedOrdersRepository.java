@@ -7,13 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface AcceptedOrdersRepository extends ReactiveCrudRepository<AcceptedOrders, AcceptedOrderPk> {
-  //Mono<AcceptedOrders> createAcceptedOrder(AcceptedOrderPk acceptedOrderPk);
-
-  //Flux<AcceptedOrders> findByUserId(Long userId);
-
+  Flux<AcceptedOrders> findByUserId(Long userId);
   Mono<AcceptedOrders> findByOrderIdAndUserId(Long orderId, Long userId);
-
-  Mono<AcceptedOrders> save(AcceptedOrders acceptedOrders);
-
-  //Mono<AcceptedOrders> deleteById(AcceptedOrderPk acceptedOrderPk);
+  Mono<Void> deleteByOrderIdAndUserId(Long orderId, Long userId);
 }

@@ -6,16 +6,15 @@ import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.role.RolesListResponse;
-import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.ListUsersResponse;
-import com.carry.basar.model.dto.user.UpdateUserRequest;
-import com.carry.basar.model.dto.user.UpdateUserResponse;
+import com.carry.basar.model.dto.user.*;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
 import com.carry.basar.service.UserRoleService;
 import com.carry.basar.service.UserService;
 import com.carry.basar.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +33,9 @@ public class UserServiceImpl implements UserService {
   private final UserRolRepository userRolRepository;
   private final UserRoleService userRoleService;
   private final Utils utils;
+
+  // Añade un logger a tu clase
+  private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
   public UserServiceImpl(UserRepository userRepository,
@@ -66,7 +68,7 @@ public class UserServiceImpl implements UserService {
                       .collectList()
                       .flatMap(roleNames -> {
                         String tkn = jwtUtil.generateToken(user.getName());
-                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames);
+                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames, user.getId());
                         return Mono.just(response);
                       });
             })
@@ -174,7 +176,6 @@ public class UserServiceImpl implements UserService {
             });
   }
 
-
   private Mono<User> assignRolesToUser(User user, Set<String> roles) {
     return userRepository.save(user).flatMap(savedUser -> {
       if (savedUser.getId() == null) {
@@ -183,7 +184,8 @@ public class UserServiceImpl implements UserService {
       System.out.println("User saved: " + savedUser.getId());
 
       // 2. Buscar roles de forma reactiva
-      return Flux.fromIterable(roles).flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
+      return Flux.fromIterable(roles)
+              .flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
                 if (role == null || role.getRolId() == null) {
                   return Mono.error(new ResponseStatusException(
                           HttpStatus.NOT_FOUND, "El rol " + roleName + " no existe"));
@@ -203,5 +205,27 @@ public class UserServiceImpl implements UserService {
       System.out.println("Error saving a user: " + e.getMessage());
       return Mono.error(new RuntimeException("Error saving a user: ", e));
     });
+  }
+
+  @Override
+  public Mono<RecoverPwdResponse> changeUserPassword(RecoverPwdRequest request) {
+    return userRepository.findByName(request.getUsername())
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Error, user not found")))
+            .flatMap(user -> {
+              // Es más eficiente modificar el objeto existente que crear uno nuevo
+              user.setPassword(passwordEncoder.encode(request.getPassword()));
+              return userRepository.save(user)
+                      .doOnSuccess(savedUser -> {
+                        log.info("Password for user '{}' (ID: {}) was updated successfully.", savedUser.getName(), savedUser.getId());
+                      })
+                      .map(savedUser -> new RecoverPwdResponse(savedUser.getName(), savedUser.getPassword()));
+            });
+  }
+
+  @Override
+  public Flux<RolesListResponse> listPublicRoles() {
+    return this.roleRepository.findAll()
+            .filter(role -> !role.getName().equals("ADMIN"))
+            .map(role -> new RolesListResponse(role.getName()));
   }
 }

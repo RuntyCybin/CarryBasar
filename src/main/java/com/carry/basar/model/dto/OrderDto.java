@@ -6,8 +6,25 @@ public class OrderDto {
     private String description;
     private Integer volume;
     private LocalDateTime createdAt;
+    private LocalDateTime dueDate;
+    private Long orderId;
 
     public OrderDto() {
+    }
+
+    public OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt) {
+        this.orderId = orderId;
+        this.description = description;
+        this.volume = volume;
+        this.createdAt = createdAt;
+    }
+
+    public OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt, LocalDateTime dueDate) {
+        this.orderId = orderId;
+        this.description = description;
+        this.volume = volume;
+        this.createdAt = createdAt;
+        this.dueDate = dueDate;
     }
 
     public OrderDto(String description, Integer volume, LocalDateTime createdAt) {
@@ -43,5 +60,21 @@ public class OrderDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
     }
 }
