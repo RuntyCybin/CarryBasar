@@ -24,7 +24,7 @@ public class AcceptOrderController {
    * @param acceptOrderRequest
    * @return a DTO for an accepted order
    */
-  @PostMapping("/create")
+  @PostMapping
   public Mono<AcceptedOrderResponse> acceptOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
     return acceptOrderService.createOrder(acceptOrderRequest);
   }
@@ -35,7 +35,7 @@ public class AcceptOrderController {
    * @param orderId
    * @return a DTO for an accepted order
    */
-  @GetMapping("/get")
+  @GetMapping
   public Mono<AcceptedOrderResponse> getAcceptedOrderByPk(@Valid @RequestParam Long userId, @Valid @RequestParam Long orderId) {
     return acceptOrderService.getAcceptedOrderByPk(userId, orderId);
   }
@@ -56,7 +56,7 @@ public class AcceptOrderController {
    * @param userId
    * @return a String success message
    */
-  @DeleteMapping("/delete")
+  @DeleteMapping
   public Mono<String> deleteAcceptedOrder(@Valid @RequestParam Long orderId, @Valid @RequestParam Long userId) {
     return acceptOrderService.removeAcceptedOrderByPk(orderId, userId);
   }

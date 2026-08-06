@@ -61,11 +61,12 @@
                         parsedData.forEach(order => {
                             console.log("Order NAME: " + order.orderDesc);
                             container.innerHTML += `
-                            <h6 class="display-5 fw-bold" id="idOrder">Orden: ${order.orderDesc}</h6>
+                            <h6 class="display-5" id="idOrder">Orden: ${order.orderDesc}</h6>
                             <p class="col-md-8 fs-4" id="descOrder">Identificador de la orden: ${order.orderId}</p>
                             <p class="col-md-8 fs-4" id="volumeOrder">Volumen: ${order.vol}</p>
                             <p class="col-md-8 fs-4" id="userOrder">Usuario: ${order.userId}</p>
                             <small class="opacity-50 text-nowrap">${new Date(order.createdAt).toLocaleString()}</small>
+                            <button type="button" id="eliminarAcceptedOrderBtn" onclick="eliminarAcceptedOrder(${order.orderId}, ${order.userId})" class="btn btn-outline-danger">Eliminar</button>
                             <hr>`;
                         });
                     });
@@ -85,6 +86,63 @@
 
             document.getElementById('volverBtn').addEventListener('click', () => {
                 window.location.href = '/public/dashboard.html';
+            });
+        }
+    }
+
+    // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
+    function showBootstrapAlert(message, duration = 5000) {
+        const alertContainer = document.getElementById('alertContainer');
+        if (!alertContainer) return;
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success fade';
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.textContent = message;
+
+        alertContainer.appendChild(alertDiv);
+
+        // se añade "show" en el siguiente frame para que la transicion de fade-in se aplique
+        requestAnimationFrame(() => alertDiv.classList.add('show'));
+
+        setTimeout(() => {
+            alertDiv.classList.remove('show'); // dispara el fade-out
+            alertDiv.addEventListener('transitionend', () => alertDiv.remove(), { once: true });
+        }, duration);
+    }
+
+    // Si venimos de una recarga tras una accion (p.ej. eliminar una orden aceptada), mostramos el alert pendiente
+    const pendingAlert = sessionStorage.getItem('pendingAlert');
+    if (pendingAlert) {
+        sessionStorage.removeItem('pendingAlert');
+        showBootstrapAlert(pendingAlert);
+    }
+
+    // Funcion para eliminar una orden aceptada
+    window.eliminarAcceptedOrder = function eliminarAcceptedOrder(orderId, userId) {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            alert('Token no válido');
+            return;
+        }
+        if (confirm('¿Estás seguro de eliminar esta orden aceptada?')) {
+            fetch(`/v1/api/acceptOrder?orderId=${orderId}&userId=${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            }).then(async res => {
+                if (!res.ok) {
+                    const errorBody = await res.json().catch(() => ({}));
+                    const errorMsg = errorBody.error || 'Error eliminando la orden aceptada';
+                    throw new Error(errorMsg);
+                }
+                sessionStorage.setItem('pendingAlert', 'Orden aceptada eliminada correctamente!');
+                window.location.reload();
+            }).catch(err => {
+                console.error(err);
+                alert('Error: ' + err.message);
             });
         }
     }

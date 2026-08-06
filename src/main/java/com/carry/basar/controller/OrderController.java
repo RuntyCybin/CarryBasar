@@ -21,6 +21,11 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    /**
+     * Endpoint to create an order if you are a CLIENT user
+     * @param orderDto
+     * @return a OrderDto object
+     */
     @PostMapping
     public Mono<OrderDto> createOrder(@RequestBody OrderDto orderDto) {
         return orderService.createOrder(orderDto);
