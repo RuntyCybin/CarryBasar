@@ -17,6 +17,9 @@ public class Order {
     @Column("orderdate")
     private LocalDateTime orderDate;
 
+    @Column("due_date")
+    private LocalDateTime dueDate;
+
     @Column("userid")
     private Long userId;
 
@@ -65,4 +68,11 @@ public class Order {
         this.orderDate = orderDate;
     }
 
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
+    }
 }

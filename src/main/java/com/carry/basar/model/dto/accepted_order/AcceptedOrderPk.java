@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class AcceptedOrderPk {
 
-  @Column("orderid")
+  @Column("acceptedorderid")
   private Long orderId;
 
   @Column("userid")

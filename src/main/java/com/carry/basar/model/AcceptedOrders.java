@@ -13,7 +13,7 @@ public class AcceptedOrders {
   @Column("userid")
   private Long userId;
 
-  @Column("orderid")
+  @Column("acceptedorderid")
   private Long orderId;
 
   @Column("createdAt")
@@ -22,7 +22,13 @@ public class AcceptedOrders {
   @Column("shippedAt")
   private LocalDateTime shippedAt;
 
-  public AcceptedOrders(AcceptedOrderPk pk, LocalDateTime acceptedAt, LocalDateTime shippedAt) {
+  @Column("description")
+  private String description;
+
+  @Column("vol")
+  private Integer vol;
+
+  public AcceptedOrders(AcceptedOrderPk pk, LocalDateTime acceptedAt, LocalDateTime shippedAt, String description, Integer vol) {
     if (null == pk) {
       throw new IllegalArgumentException("AcceptedOrderPk cannot be null");
     }
@@ -30,13 +36,18 @@ public class AcceptedOrders {
     this.orderId = pk.getOrderId();
     this.createdAt = acceptedAt;
     this.shippedAt = shippedAt;
+    this.description = description;
+    this.vol = vol;
   }
 
-  public AcceptedOrders(Long userId, Long orderId, LocalDateTime createdAt, LocalDateTime shippedAt) {
+  public AcceptedOrders(Long userId, Long orderId, LocalDateTime createdAt, LocalDateTime shippedAt,
+                        String description, Integer vol) {
     this.userId = userId;
     this.orderId = orderId;
     this.createdAt = createdAt;
     this.shippedAt = shippedAt;
+    this.description = description;
+    this.vol = vol;
   }
 
   public AcceptedOrders() {
@@ -72,5 +83,21 @@ public class AcceptedOrders {
 
   public void setShippedAt(LocalDateTime shippedAt) {
     this.shippedAt = shippedAt;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public Integer getVol() {
+    return vol;
+  }
+
+  public void setVol(Integer vol) {
+    this.vol = vol;
   }
 }

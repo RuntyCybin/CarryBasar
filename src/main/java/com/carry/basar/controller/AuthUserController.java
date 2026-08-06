@@ -1,6 +1,8 @@
 package com.carry.basar.controller;
 
 import javax.validation.Valid;
+
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
 import com.carry.basar.utils.Utils;
@@ -52,6 +54,14 @@ public class AuthUserController {
     return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
             .flatMapMany(auth -> service.listAllUsers());
+  }
+
+  @GetMapping("/listRoles")
+  public Flux<RolesListResponse> listUserRoles() {
+    return ReactiveSecurityContextHolder.getContext()
+            .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
+            .map(authentication -> authentication)
+            .flatMapMany(service::listAllRolesByUserName);
   }
 
 }

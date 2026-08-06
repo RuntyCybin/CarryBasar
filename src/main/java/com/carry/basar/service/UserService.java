@@ -2,6 +2,7 @@ package com.carry.basar.service;
 
 import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,5 +23,11 @@ public interface UserService {
   Flux<ListUsersResponse> listAllUsers();
 
   Mono<String> changePwd(ChangePwdNotLoggedUserRequest request);
+
+  Flux<RolesListResponse> listAllRolesByUserName(String username);
+
+  Mono<RecoverPwdResponse> changeUserPassword(RecoverPwdRequest request);
+
+  Flux<RolesListResponse> listPublicRoles();
 
 }

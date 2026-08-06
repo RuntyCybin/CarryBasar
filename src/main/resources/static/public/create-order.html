@@ -31,9 +31,16 @@
 <body>
     <header class="bg-dark text-white text-center p-3">
         <nav>
-            <a href="dashboard.html" class="text-white m-2">Dashboard</a>
-            <a href="about.html" class="text-white m-2">Sobre mí</a>
-            <a href="contact.html" class="text-white m-2">Contacto</a>
+            <div class="container-fluid">
+                <a href="dashboard.html" class="text-white m-2">Dashboard</a>
+                <a href="about.html" class="text-white m-2">Sobre mí</a>
+                <a href="contact.html" class="text-white m-2">Contacto</a>
+                <a href="profile.html" class="text-white m-2">Perfil</a>
+
+                <span class="navbar-text" id="roleUser">
+                    Navbar text with an inline element
+                </span>
+            </div>
         </nav>
     </header>
     <main class="container my-5">
@@ -48,13 +55,18 @@
                 <div class="col">
                     <form id="createOrderForm">
                         <div class="mb-3">
-                            <label for="description" class="form-label">Descripción</label>
+                            <label for="description" class="form-label">Descripción del pedido</label>
                             <input type="text" class="form-control" id="description" name="description" required>
                         </div>
                         <div class="mb-3">
                             <label for="volume" class="form-label">Volumen</label>
                             <input type="number" class="form-control" id="volume" name="volume" min="1" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="dueDate" class="form-label">Fecha límite</label>
+                            <input type="date" class="form-control" id="dueDate" name="dueDate" required>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Crear pedido</button>
                     </form>
                 </div>
