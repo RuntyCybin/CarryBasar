@@ -3,17 +3,17 @@ package com.carry.basar.model.dto.user;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-public class ChangePwdNotLoggedUserRequest {
+public class RememberPasswordRequestDto {
   private String newPassword;
   @NotBlank(message = "Email is mandatory")
   @Email(message = "Email should be valid")
   private String to;
   private String subject;
 
-  public ChangePwdNotLoggedUserRequest() {
+  public RememberPasswordRequestDto() {
   }
 
-  public ChangePwdNotLoggedUserRequest(String newPassword, String to, String subject) {
+  public RememberPasswordRequestDto(String newPassword, String to, String subject) {
     this.newPassword = newPassword;
     this.to = to;
     this.subject = subject;

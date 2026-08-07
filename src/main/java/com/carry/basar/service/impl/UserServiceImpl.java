@@ -36,9 +36,7 @@ public class UserServiceImpl implements UserService {
   private final Utils utils;
   private final EmailService emailService;
 
-  // Añade un logger a tu clase
   private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
-
 
   public UserServiceImpl(UserRepository userRepository,
                          JwtUtil jwtUtil,
@@ -102,11 +100,12 @@ public class UserServiceImpl implements UserService {
             .flatMap(username -> userRepository.findByName(username)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No logged in user found")))
                     .flatMap(user -> {
-                      System.out.println("Removing all roles for user: " + user.getEmail());
+                      log.info("Removing all roles for user: " + user.getEmail());
+                      log.info("new password: " + updateUserRequest.getNewPassword());
 
                       user.setName(updateUserRequest.getUsername());
                       user.setEmail(updateUserRequest.getEmail());
-                      user.setPassword(user.getPassword());
+                      user.setPassword(passwordEncoder.encode(updateUserRequest.getNewPassword()));
 
                       // Encadenar la eliminación de roles correctamente
                       return userRoleService.removeAllRolesForUser(user.getId())
@@ -166,25 +165,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Mono<String> changePwd(ChangePwdNotLoggedUserRequest request) {
-    // find a user by his email
-    return userRepository.findByEmail(request.getTo())
-            .doOnSubscribe(sub -> System.out.println("🔍 Buscando usuario con email: " + request.getTo()))
-            .doOnNext(user -> System.out.println("✅ Usuario encontrado: " + user.getEmail()))
-            .doOnError(error -> System.out.println("❌ Error al buscar usuario: " + error.getMessage()))
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found")))
-            .flatMap(foundUser -> {
-              foundUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
-              return userRepository.save(foundUser)
-                      .doOnSuccess(savedUser -> {
-                        System.out.println("🔒 Contraseña actualizada para: " + savedUser.getEmail());
-                        emailService.sendAsync(request.getTo(), request.getSubject(), request.getNewPassword());
-                      })
-                      .then(Mono.just("Password changed successfully"));
-            });
-  }
-
-  @Override
   public Flux<RolesListResponse> listAllRolesByUserName(String username) {
     return userRepository.findByName(username)
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found for username: " + username)))
@@ -198,7 +178,6 @@ public class UserServiceImpl implements UserService {
                       });
             });
   }
-
 
   private Mono<User> assignRolesToUser(User user, Set<String> roles) {
     return userRepository.save(user).flatMap(savedUser -> {
@@ -232,24 +211,28 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Mono<RecoverPwdResponse> changeUserPassword(RecoverPwdRequest request) {
-    return userRepository.findByName(request.getUsername())
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Error, user not found")))
-            .flatMap(user -> {
-              // Es más eficiente modificar el objeto existente que crear uno nuevo
-              user.setPassword(passwordEncoder.encode(request.getPassword()));
-              return userRepository.save(user)
-                      .doOnSuccess(savedUser -> {
-                        log.info("Password for user '{}' (ID: {}) was updated successfully.", savedUser.getName(), savedUser.getId());
-                      })
-                      .map(savedUser -> new RecoverPwdResponse(savedUser.getName(), savedUser.getPassword()));
-            });
-  }
-
-  @Override
   public Flux<RolesListResponse> listPublicRoles() {
     return this.roleRepository.findAll()
             .filter(role -> !role.getName().equals("ADMIN"))
             .map(role -> new RolesListResponse(role.getName()));
+  }
+
+  @Override
+  public Mono<RecoverPwdResponse> rememberUserPassword(RememberPasswordRequestDto request) {
+    // find a user by his email
+    return userRepository.findByEmail(request.getTo())
+            .doOnSubscribe(sub -> System.out.println("🔍 Buscando usuario con email: " + request.getTo()))
+            .doOnNext(user -> System.out.println("✅ Usuario encontrado: " + user.getEmail()))
+            .doOnError(error -> System.out.println("❌ Error al buscar usuario: " + error.getMessage()))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found")))
+            .flatMap(foundUser -> {
+              foundUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+              return userRepository.save(foundUser)
+                      .doOnSuccess(savedUser -> {
+                        log.info("Password for user '{}' (ID: {}) was recovered successfully.", savedUser.getName(), savedUser.getId());
+                        emailService.sendAsync(request.getTo(), request.getSubject(), request.getNewPassword());
+                      })
+                      .map(savedUser -> new RecoverPwdResponse(savedUser.getName(), savedUser.getPassword()));
+            });
   }
 }

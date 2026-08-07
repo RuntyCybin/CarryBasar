@@ -35,9 +35,13 @@ public class EmailServiceImpl implements EmailService {
   }
 
   @PostConstruct
-  void verifySmtp() throws MessagingException {
-    mailSender.testConnection();
-    log.info("Conexión SMTP OK");
+  void verifySmtp() {
+    try {
+      mailSender.testConnection();
+      log.info("Conexión SMTP OK");
+    } catch (MessagingException e) {
+      log.warn("No se pudo verificar la conexión SMTP: {}", e.getMessage());
+    }
   }
 
   /** Sincrónico */

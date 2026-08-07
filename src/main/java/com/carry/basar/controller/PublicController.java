@@ -5,15 +5,17 @@ import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.RecoverPwdRequest;
+import com.carry.basar.model.dto.user.ChangePwdRequestDto;
 import com.carry.basar.model.dto.user.RecoverPwdResponse;
 import com.carry.basar.service.UserService;
 import com.carry.basar.service.EmailService;
-import com.carry.basar.model.dto.user.ChangePwdNotLoggedUserRequest;
+import com.carry.basar.model.dto.user.RememberPasswordRequestDto;
 
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -28,6 +30,8 @@ public class PublicController {
 
   private final UserService service;
   private final EmailService emailService;
+
+  private static final Logger log = LoggerFactory.getLogger(PublicController.class);
 
   public PublicController(UserService service, EmailService emailService) {
     this.service = service;
@@ -47,7 +51,7 @@ public class PublicController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
-        System.out.println("CONTROLLER USER: " + user.getUsername());
+      log.info("CONTROLLER USER: " + user.getUsername());
         return service.register(user);
     }
 
@@ -60,28 +64,23 @@ public class PublicController {
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
-    @PostMapping("/recoverpwd")
-    public Mono<RecoverPwdResponse> changePassword(@Valid @RequestBody RecoverPwdRequest request) {
-        return service.changeUserPassword(request);
-    }
-
-    @PostMapping("/changePassword")
-    public Mono<ResponseEntity<String>> changePwd(@Valid @RequestBody ChangePwdNotLoggedUserRequest request) {
-        return service.changePwd(request)
-                .map(ResponseEntity::ok)
-                .onErrorResume(err -> Mono.just(ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body("Error: " + err.getMessage())));
+  /**
+   * Endpoint to bring the password if you forgot it and can't enter
+   * @param request
+   * @return
+   */
+  @PostMapping("/changePassword")
+    public Mono<RecoverPwdResponse> rememberPassword(@Valid @RequestBody RememberPasswordRequestDto request) {
+        return service.rememberUserPassword(request);
     }
 
     @PostMapping("/mail/send")
     public Mono<ResponseEntity<String>> send(@RequestParam String to, @RequestParam String subject, @RequestParam String text) {
-        System.out.println("LLEGO AL CONTROLLER");
-        return emailService.sendAsync(to, subject, text)
-                .thenReturn(ResponseEntity.ok("Enviado 🚀"))
-                .onErrorResume(e ->
-                        Mono.just(ResponseEntity.status(401)
-                                .body("Error SMTP: " + e.getMessage())));
+      return emailService.sendAsync(to, subject, text)
+              .thenReturn(ResponseEntity.ok("Enviado 🚀"))
+              .onErrorResume(e ->
+                      Mono.just(ResponseEntity.status(401)
+                              .body("Error SMTP: " + e.getMessage())));
     }
     
 }

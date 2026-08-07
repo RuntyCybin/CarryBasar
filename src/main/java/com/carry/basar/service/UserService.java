@@ -22,12 +22,10 @@ public interface UserService {
 
   Flux<ListUsersResponse> listAllUsers();
 
-  Mono<String> changePwd(ChangePwdNotLoggedUserRequest request);
-
   Flux<RolesListResponse> listAllRolesByUserName(String username);
 
-  Mono<RecoverPwdResponse> changeUserPassword(RecoverPwdRequest request);
-
   Flux<RolesListResponse> listPublicRoles();
+
+  Mono<RecoverPwdResponse> rememberUserPassword(RememberPasswordRequestDto request);
 
 }

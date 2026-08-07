@@ -6,14 +6,16 @@ public class UpdateUserRequest {
   private String username;
   private String email;
   private List<String> role;
+  private String newPassword;
 
   public UpdateUserRequest() {
   }
 
-  public UpdateUserRequest(String username, String password, String email, List<String> role) {
+  public UpdateUserRequest(String username, String newPassword, String email, List<String> role) {
     this.username = username;
     this.email = email;
     this.role = role;
+    this.newPassword = newPassword;
   }
 
   public String getUsername() {
@@ -26,5 +28,9 @@ public class UpdateUserRequest {
 
   public List<String> getRole() {
     return role;
+  }
+
+  public String getNewPassword() {
+    return newPassword;
   }
 }
