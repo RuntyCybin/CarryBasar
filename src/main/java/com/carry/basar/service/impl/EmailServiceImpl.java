@@ -66,7 +66,7 @@ public class EmailServiceImpl implements EmailService {
 
   private void sendBlocking(String to, String subject, String text) {
     SimpleMailMessage msg = new SimpleMailMessage();
-    msg.setFrom("MS_jiVq6W@test-yxj6lj9zpz74do2r.mlsender.net");
+    msg.setFrom(from);
     msg.setTo(to);
     msg.setSubject(subject);
     msg.setText(text);

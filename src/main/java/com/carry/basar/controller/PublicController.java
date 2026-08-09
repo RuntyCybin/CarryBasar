@@ -5,11 +5,10 @@ import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.ChangePwdRequestDto;
-import com.carry.basar.model.dto.user.RecoverPwdResponse;
+import com.carry.basar.model.dto.user.ChangePasswordResponseDto;
 import com.carry.basar.service.UserService;
 import com.carry.basar.service.EmailService;
-import com.carry.basar.model.dto.user.RememberPasswordRequestDto;
+import com.carry.basar.model.dto.user.ChangePasswordRequestDto;
 
 
 import javax.validation.Valid;
@@ -43,44 +42,55 @@ public class PublicController {
     return service.authenticate(authRequest.getUsername(), authRequest.getPassword());
   }
 
-    @GetMapping("/getPublicRoles")
-    public Flux<RolesListResponse> listPublicRoles() {
-        return service.listPublicRoles();
-    }
+  @GetMapping("/getPublicRoles")
+  public Flux<RolesListResponse> listPublicRoles() {
+    return service.listPublicRoles();
+  }
 
-    @PostMapping("/register")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
-      log.info("CONTROLLER USER: " + user.getUsername());
-        return service.register(user);
-    }
+  @PostMapping("/register")
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
+    log.info("CONTROLLER USER: {}", user.getUsername());
+    return service.register(user);
+  }
 
-    @GetMapping("/check")
-    public Mono<ResponseEntity<Void>> checkIfTokenIsValid() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .filter(auth -> auth != null && auth.isAuthenticated())
-                .map(auth -> ResponseEntity.ok().<Void>build())
-                .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-    }
+  @GetMapping("/check")
+  public Mono<ResponseEntity<Void>> checkIfTokenIsValid() {
+    return ReactiveSecurityContextHolder.getContext()
+            .map(SecurityContext::getAuthentication)
+            .filter(auth -> auth != null && auth.isAuthenticated())
+            .map(auth -> ResponseEntity.ok().<Void>build())
+            .defaultIfEmpty(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+  }
 
   /**
    * Endpoint to bring the password if you forgot it and can't enter
-   * @param request
-   * @return
+   *
+   * @param request : consists of a user email and a new password
+   * @return an object with a username and a new password
    */
   @PostMapping("/changePassword")
-    public Mono<RecoverPwdResponse> rememberPassword(@Valid @RequestBody RememberPasswordRequestDto request) {
-        return service.rememberUserPassword(request);
-    }
+  public Mono<ChangePasswordResponseDto> changePassword(@Valid @RequestBody ChangePasswordRequestDto request) {
+    return service.changeUserPassword(request);
+  }
 
-    @PostMapping("/mail/send")
-    public Mono<ResponseEntity<String>> send(@RequestParam String to, @RequestParam String subject, @RequestParam String text) {
-      return emailService.sendAsync(to, subject, text)
-              .thenReturn(ResponseEntity.ok("Enviado 🚀"))
-              .onErrorResume(e ->
-                      Mono.just(ResponseEntity.status(401)
-                              .body("Error SMTP: " + e.getMessage())));
-    }
-    
+  /**
+   * Endpoint to test an email send
+   *
+   * @param to      : address to where you are sending an email
+   * @param subject : subject of the email
+   * @param text    : message itself
+   * @return a message "sent" is success
+   */
+  @PostMapping("/mail/send")
+  public Mono<ResponseEntity<String>> send(@RequestParam String to,
+                                           @RequestParam String subject,
+                                           @RequestParam String text) {
+    return emailService.sendAsync(to, subject, text)
+            .thenReturn(ResponseEntity.ok("Sent 🚀"))
+            .onErrorResume(e ->
+                    Mono.just(ResponseEntity.status(401)
+                            .body("Error SMTP: " + e.getMessage())));
+  }
+
 }

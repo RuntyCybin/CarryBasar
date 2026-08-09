@@ -11,8 +11,8 @@ spring:
   mail:
     host: smtp.mailersend.net
     port: 587
-    username: MS_jiVq6W@test-yxj6lj9zpz74do2r.mlsender.net
-    password: mssp.9pvKbPR.0p7kx4xn3j8g9yjr.ZoBAJFZ
+    username: MS_JCyxgv@test-z0vklo6xk3el7qrx.mlsender.net
+    password: mssp.Q2jxVKE.jy7zpl9ydqog5vx6.zsvbxYp
     protocol: smtp
     properties:
       mail:

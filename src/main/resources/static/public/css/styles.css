@@ -8,6 +8,16 @@ body {
     margin: 0;
 }
 
+#alertContainer {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    z-index: 1050;
+}
+
 .login-container {
     background: white;
     padding: 2rem;
