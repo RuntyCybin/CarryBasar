@@ -1,10 +1,10 @@
 package com.carry.basar.model.dto.user;
 
-public class RecoverPwdRequest {
+public class ChangePwdRequestDto {
   private String username;
   private String password;
 
-  public RecoverPwdRequest(String username, String password) {
+  public ChangePwdRequestDto(String username, String password) {
     this.username = username;
     this.password = password;
   }
