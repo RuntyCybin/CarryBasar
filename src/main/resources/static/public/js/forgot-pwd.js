@@ -62,7 +62,7 @@
   });
 
   // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
-  function showBootstrapAlert(message, duration = 5000) {
+  function showBootstrapAlert(message, duration = 7000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
