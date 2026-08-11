@@ -32,11 +32,7 @@ public class RoleServiceImpl implements RoleService {
   @Override
   public Mono<RoleDto> findRoleByName(String name) {
     return roleRepository.findByName(name)
-            .map(role -> {
-              RoleDto roleDto = new RoleDto();
-              roleDto.setName(role.getName());
-              return roleDto;
-            })
+            .map(role -> new RoleDto(role.getName()))
             .onErrorResume(e -> {
               System.out.println("Error searching for a role: " + e.getMessage());
               return Mono.error(new RuntimeException("Error searching for a role: ", e));
@@ -45,11 +41,11 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   public Mono<Role> registerRole(RoleDto roleDto) {
-    return roleRepository.findByName(roleDto.getName())
+    return roleRepository.findByName(roleDto.name())
             .flatMap(role -> Mono.<Role>error(new RuntimeException("Role already exists")))
             .switchIfEmpty(Mono.defer(() -> {
               Role newRole = new Role();
-              newRole.setName(roleDto.getName());
+              newRole.setName(roleDto.name());
               return roleRepository.save(newRole);
             }))
             .onErrorResume(e -> {
@@ -64,11 +60,7 @@ public class RoleServiceImpl implements RoleService {
             .flatMap(roleFound -> {
               roleFound.setName(request.getNewName());
               return roleRepository.save(roleFound)
-                      .map(savedRole -> {
-                        RoleDto roleDto = new RoleDto();
-                        roleDto.setName(savedRole.getName());
-                        return roleDto;
-                      });
+                      .map(savedRole -> new RoleDto(savedRole.getName()));
             });
   }
 

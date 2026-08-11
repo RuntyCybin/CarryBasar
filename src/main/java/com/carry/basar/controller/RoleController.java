@@ -49,7 +49,7 @@ public class RoleController {
                 .flatMap(ctx -> Mono.just(ctx.getAuthentication()))
                 .filter(auth -> auth != null && auth.isAuthenticated())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized")))
-                .flatMap(authUser -> service.deleteRole(roleName.getName(), authUser.getName()));
+                .flatMap(authUser -> service.deleteRole(roleName.name(), authUser.getName()));
     }
 
     @GetMapping("/listRoles")
