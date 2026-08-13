@@ -1,7 +1,7 @@
 package com.carry.basar.model.repository;
 
 import com.carry.basar.model.AcceptedOrders;
-import com.carry.basar.model.dto.accepted_order.AcceptedOrderPk;
+import com.carry.basar.model.AcceptedOrderPk;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

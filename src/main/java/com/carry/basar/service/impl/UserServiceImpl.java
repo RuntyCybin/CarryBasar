@@ -17,7 +17,6 @@ import com.carry.basar.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -91,7 +90,7 @@ public class UserServiceImpl implements UserService {
       return Mono.error(new RuntimeException("User already exists: " + existingUser.getEmail()));
     }).switchIfEmpty(Mono.defer(() -> {
       log.info("User does not exist: {}", user.getEmail());
-      return assignRolesToUser(user, createUserRequest.getRoles());
+      return assignRolesToUser(user, createUserRequest.roles());
     })).cast(User.class);
   }
 
@@ -102,15 +101,15 @@ public class UserServiceImpl implements UserService {
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No logged in user found")))
                     .flatMap(user -> {
                       log.info("Removing all roles for user: {}", user.getEmail());
-                      log.info("new password: {}", updateUserRequest.getNewPassword());
+                      log.info("new password: {}", updateUserRequest.newPassword());
 
-                      user.setName(updateUserRequest.getUsername());
-                      user.setEmail(updateUserRequest.getEmail());
-                      user.setPassword(passwordEncoder.encode(updateUserRequest.getNewPassword()));
+                      user.setName(updateUserRequest.username());
+                      user.setEmail(updateUserRequest.email());
+                      user.setPassword(passwordEncoder.encode(updateUserRequest.newPassword()));
 
                       // Encadenar la eliminación de roles correctamente
                       return userRoleService.removeAllRolesForUser(user.getId())
-                              .thenMany(Flux.fromIterable(updateUserRequest.getRole())
+                              .thenMany(Flux.fromIterable(updateUserRequest.role())
                                       .flatMap(strRole -> roleRepository.findByName(strRole)
                                               .switchIfEmpty(Mono.error(new ResponseStatusException(
                                                       HttpStatus.NOT_FOUND, "Role " + strRole + " not found")))
@@ -120,12 +119,8 @@ public class UserServiceImpl implements UserService {
                               .collectList() // recoge todos los roles a asignar
                               .flatMapMany(userRolRepository::saveAll)
                               .then(userRepository.save(user)
-                                      .map(savedUser -> {
-                                        UpdateUserResponse response = new UpdateUserResponse();
-                                        response.setUsername(savedUser.getName());
-                                        response.setEmail(savedUser.getEmail());
-                                        return response;
-                                      }));
+                                      .map(savedUser -> new UpdateUserResponse(
+                                              savedUser.getName(), savedUser.getEmail(), null)));
                     })
             );
   }
@@ -217,23 +212,23 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Mono<ChangePasswordResponseDto> changeUserPassword(ChangePasswordRequestDto request) {
+  public Mono<ChangePasswordResponse> changeUserPassword(ChangePasswordRequest request) {
     // find a user by his email
-    return userRepository.findByEmail(request.getUserEmail())
+    return userRepository.findByEmail(request.userEmail())
             .doOnSubscribe(sub -> log.info(
-                    "\uD83D\uDD0D Buscando usuario con email: {}", request.getUserEmail()))
+                    "\uD83D\uDD0D Buscando usuario con email: {}", request.userEmail()))
             .doOnNext(user -> log.info("✅ Usuario encontrado: {}", user.getEmail()))
             .doOnError(error -> log.error("❌ Error al buscar usuario: {}", error.getMessage()))
             .switchIfEmpty(Mono.error(new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "No user found")))
             .flatMap(foundUser -> {
-              foundUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+              foundUser.setPassword(passwordEncoder.encode(request.newPassword()));
               return userRepository.save(foundUser)
                       .flatMap(savedUser -> {
                         log.info("Password for user '{}' (ID: {}) was changed successfully.",
                                 savedUser.getName(), savedUser.getId());
                         return emailService.sendAsync(
-                                        request.getUserEmail(),
+                                        request.userEmail(),
                                         "Password change",
                                         "Your new password has been modified")
                                 .onErrorResume(e -> {
@@ -242,7 +237,7 @@ public class UserServiceImpl implements UserService {
                                 })
                                 .thenReturn(savedUser);
                       })
-                      .map(savedUser -> new ChangePasswordResponseDto(
+                      .map(savedUser -> new ChangePasswordResponse(
                               savedUser.getName(),
                               savedUser.getPassword()));
             });

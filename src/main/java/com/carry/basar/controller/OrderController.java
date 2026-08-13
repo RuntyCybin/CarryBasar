@@ -1,7 +1,7 @@
 package com.carry.basar.controller;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
-import com.carry.basar.model.dto.order.RemoveOrderDtoResponse;
+import com.carry.basar.model.dto.order.RemoveOrderResponse;
 import org.springframework.web.bind.annotation.*;
 
 import com.carry.basar.model.Order;
@@ -52,7 +52,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public Mono<RemoveOrderDtoResponse> removeOrderById(@PathVariable Long orderId) {
+    public Mono<RemoveOrderResponse> removeOrderById(@PathVariable Long orderId) {
         return orderService.removeOrderById(orderId);
     }
 }

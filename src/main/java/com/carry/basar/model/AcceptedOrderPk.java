@@ -1,4 +1,4 @@
-package com.carry.basar.model.dto.accepted_order;
+package com.carry.basar.model;
 
 import org.springframework.data.relational.core.mapping.Column;
 

@@ -3,7 +3,7 @@ package com.carry.basar.service.impl;
 import java.time.LocalDateTime;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
-import com.carry.basar.model.dto.order.RemoveOrderDtoResponse;
+import com.carry.basar.model.dto.order.RemoveOrderResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -61,12 +61,12 @@ public class OrderServiceImpl implements OrderService {
                       HttpStatus.NOT_FOUND,
                       "User not found")))
               .flatMap(user -> {
-                System.out.println("Create order - User: " + user.getEmail() + " due date: " + orderDto.getDueDate());
+                System.out.println("Create order - User: " + user.getEmail() + " due date: " + orderDto.dueDate());
                 Order order = new Order();
-                order.setDescription(orderDto.getDescription());
-                order.setVol(orderDto.getVolume());
+                order.setDescription(orderDto.description());
+                order.setVol(orderDto.volume());
                 order.setOrderDate(LocalDateTime.now());
-                order.setDueDate(orderDto.getDueDate());
+                order.setDueDate(orderDto.dueDate());
                 order.setUserId(user.getId());
                 return orderRepository.save(order)
                     .flatMap(savedOrder -> {
@@ -128,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public Mono<RemoveOrderDtoResponse> removeOrderById(Long orderId) {
+  public Mono<RemoveOrderResponse> removeOrderById(Long orderId) {
     return getAuthenticatedUsername()
             .flatMap(username -> {
               return userRepository.findByName(username)
@@ -137,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
                       .flatMap(user -> {
                         return orderRepository.findById(orderId)
                                 .flatMap(orderRepository::delete)
-                                .thenReturn(new RemoveOrderDtoResponse("Order " + orderId + " was removed successfully"));
+                                .thenReturn(new RemoveOrderResponse("Order " + orderId + " was removed successfully"));
                       });
             });
   }

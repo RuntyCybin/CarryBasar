@@ -1,7 +1,5 @@
 package com.carry.basar.model;
 
-import com.carry.basar.model.dto.accepted_order.AcceptedOrderPk;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 

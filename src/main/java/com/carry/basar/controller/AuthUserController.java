@@ -30,7 +30,7 @@ public class AuthUserController {
 
   @PutMapping("/update")
   public Mono<UpdateUserResponse> update(@Valid @RequestBody UpdateUserRequest userRequest) {
-    System.out.println("NEW PWD: " + userRequest.getNewPassword());
+    System.out.println("NEW PWD: " + userRequest.newPassword());
     return service.update(userRequest);
   }
 

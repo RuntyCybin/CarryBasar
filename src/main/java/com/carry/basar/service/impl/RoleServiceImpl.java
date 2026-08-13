@@ -8,6 +8,8 @@ import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
 import com.carry.basar.service.RoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +18,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class RoleServiceImpl implements RoleService {
+
+  private static final Logger log = LoggerFactory.getLogger(RoleServiceImpl.class);
 
   private final RoleRepository roleRepository;
 
@@ -32,43 +36,35 @@ public class RoleServiceImpl implements RoleService {
   @Override
   public Mono<RoleDto> findRoleByName(String name) {
     return roleRepository.findByName(name)
-            .map(role -> {
-              RoleDto roleDto = new RoleDto();
-              roleDto.setName(role.getName());
-              return roleDto;
-            })
+            .map(role -> new RoleDto(role.getName()))
             .onErrorResume(e -> {
-              System.out.println("Error searching for a role: " + e.getMessage());
+              log.error("Error searching for a role: {}", e.getMessage());
               return Mono.error(new RuntimeException("Error searching for a role: ", e));
             });
   }
 
   @Override
   public Mono<Role> registerRole(RoleDto roleDto) {
-    return roleRepository.findByName(roleDto.getName())
+    return roleRepository.findByName(roleDto.name())
             .flatMap(role -> Mono.<Role>error(new RuntimeException("Role already exists")))
             .switchIfEmpty(Mono.defer(() -> {
               Role newRole = new Role();
-              newRole.setName(roleDto.getName());
+              newRole.setName(roleDto.name());
               return roleRepository.save(newRole);
             }))
             .onErrorResume(e -> {
-              System.out.println("Error saving a role: " + e.getMessage());
+              log.error("Error saving a role: {}", e.getMessage());
               return Mono.error(new RuntimeException("Error saving a role: ", e));
             });
   }
 
   @Override
   public Mono<RoleDto> updateRole(UpdateRoleRequest request) {
-    return roleRepository.findByName(request.getSearchName())
+    return roleRepository.findByName(request.searchName())
             .flatMap(roleFound -> {
-              roleFound.setName(request.getNewName());
+              roleFound.setName(request.newName());
               return roleRepository.save(roleFound)
-                      .map(savedRole -> {
-                        RoleDto roleDto = new RoleDto();
-                        roleDto.setName(savedRole.getName());
-                        return roleDto;
-                      });
+                      .map(savedRole -> new RoleDto(savedRole.getName()));
             });
   }
 
