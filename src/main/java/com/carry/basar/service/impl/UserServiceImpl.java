@@ -5,16 +5,17 @@ import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
 import com.carry.basar.model.dto.auth.AuthResponse;
-import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.ListUsersResponse;
-import com.carry.basar.model.dto.user.UpdateUserRequest;
-import com.carry.basar.model.dto.user.UpdateUserResponse;
+import com.carry.basar.model.dto.role.RolesListResponse;
+import com.carry.basar.model.dto.user.*;
 import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
+import com.carry.basar.service.EmailService;
 import com.carry.basar.service.UserRoleService;
 import com.carry.basar.service.UserService;
 import com.carry.basar.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,9 @@ public class UserServiceImpl implements UserService {
   private final UserRolRepository userRolRepository;
   private final UserRoleService userRoleService;
   private final Utils utils;
+  private final EmailService emailService;
 
+  private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
   public UserServiceImpl(UserRepository userRepository,
                          JwtUtil jwtUtil,
@@ -41,7 +44,8 @@ public class UserServiceImpl implements UserService {
                          RoleRepository roleRepository,
                          UserRolRepository userRolRepository,
                          Utils utils,
-                         UserRoleService userRoleService) {
+                         UserRoleService userRoleService,
+                         EmailService emailService) {
     this.userRepository = userRepository;
     this.jwtUtil = jwtUtil;
     this.passwordEncoder = passwordEncoder;
@@ -49,6 +53,7 @@ public class UserServiceImpl implements UserService {
     this.userRolRepository = userRolRepository;
     this.utils = utils;
     this.userRoleService = userRoleService;
+    this.emailService = emailService;
   }
 
   @Override
@@ -65,7 +70,7 @@ public class UserServiceImpl implements UserService {
                       .collectList()
                       .flatMap(roleNames -> {
                         String tkn = jwtUtil.generateToken(user.getName());
-                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames);
+                        AuthResponse response = new AuthResponse(tkn, user.getName(), user.getEmail(), roleNames, user.getId());
                         return Mono.just(response);
                       });
             })
@@ -81,11 +86,11 @@ public class UserServiceImpl implements UserService {
     // mapping CreateUserRequest to User
     User user = this.utils.mapUser(createUserRequest);
     return userRepository.findByEmail(user.getEmail()).flatMap(existingUser -> {
-      System.out.println("User already exists: " + existingUser.getEmail());
+      log.info("User already exists: {}", existingUser.getEmail());
       return Mono.error(new RuntimeException("User already exists: " + existingUser.getEmail()));
     }).switchIfEmpty(Mono.defer(() -> {
-      System.out.println("User does not exist: " + user.getEmail());
-      return assignRolesToUser(user, createUserRequest.getRoles());
+      log.info("User does not exist: {}", user.getEmail());
+      return assignRolesToUser(user, createUserRequest.roles());
     })).cast(User.class);
   }
 
@@ -95,15 +100,16 @@ public class UserServiceImpl implements UserService {
             .flatMap(username -> userRepository.findByName(username)
                     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No logged in user found")))
                     .flatMap(user -> {
-                      System.out.println("Removing all roles for user: " + user.getEmail());
+                      log.info("Removing all roles for user: {}", user.getEmail());
+                      log.info("new password: {}", updateUserRequest.newPassword());
 
-                      user.setName(updateUserRequest.getUsername());
-                      user.setEmail(updateUserRequest.getEmail());
-                      user.setPassword(user.getPassword());
+                      user.setName(updateUserRequest.username());
+                      user.setEmail(updateUserRequest.email());
+                      user.setPassword(passwordEncoder.encode(updateUserRequest.newPassword()));
 
                       // Encadenar la eliminación de roles correctamente
                       return userRoleService.removeAllRolesForUser(user.getId())
-                              .thenMany(Flux.fromIterable(updateUserRequest.getRole())
+                              .thenMany(Flux.fromIterable(updateUserRequest.role())
                                       .flatMap(strRole -> roleRepository.findByName(strRole)
                                               .switchIfEmpty(Mono.error(new ResponseStatusException(
                                                       HttpStatus.NOT_FOUND, "Role " + strRole + " not found")))
@@ -113,12 +119,8 @@ public class UserServiceImpl implements UserService {
                               .collectList() // recoge todos los roles a asignar
                               .flatMapMany(userRolRepository::saveAll)
                               .then(userRepository.save(user)
-                                      .map(savedUser -> {
-                                        UpdateUserResponse response = new UpdateUserResponse();
-                                        response.setUsername(savedUser.getName());
-                                        response.setEmail(savedUser.getEmail());
-                                        return response;
-                                      }));
+                                      .map(savedUser -> new UpdateUserResponse(
+                                              savedUser.getName(), savedUser.getEmail(), null)));
                     })
             );
   }
@@ -158,34 +160,86 @@ public class UserServiceImpl implements UserService {
             });
   }
 
+  @Override
+  public Flux<RolesListResponse> listAllRolesByUserName(String username) {
+    return userRepository.findByName(username)
+            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No user found for username: " + username)))
+            .doOnNext(user -> log.info("User id: {}", user.getId()))
+            .doOnError(error -> log.error("❌ Error: {}", error.getMessage()))
+            .flatMapMany(user -> {
+              return userRolRepository.findByUserId(user.getId())
+                      .flatMap(userRol -> {
+                        return roleRepository.findById(userRol.getRoleId())
+                                .map(role -> new RolesListResponse(role.getName()));
+                      });
+            });
+  }
 
   private Mono<User> assignRolesToUser(User user, Set<String> roles) {
     return userRepository.save(user).flatMap(savedUser -> {
       if (savedUser.getId() == null) {
         return Mono.error(new RuntimeException("El ID del usuario guardado es null"));
       }
-      System.out.println("User saved: " + savedUser.getId());
+      log.info("User saved: {}", savedUser.getId());
 
       // 2. Buscar roles de forma reactiva
-      return Flux.fromIterable(roles).flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
+      return Flux.fromIterable(roles)
+              .flatMap(roleName -> roleRepository.findByName(roleName).flatMap(role -> {
                 if (role == null || role.getRolId() == null) {
                   return Mono.error(new ResponseStatusException(
                           HttpStatus.NOT_FOUND, "El rol " + roleName + " no existe"));
                 }
                 UserRol userRol = new UserRol(null, savedUser.getId(), role.getRolId());
-                System.out.println("Creando UserRol: " + userRol.getUserId());
+                log.info("Creando UserRol: {}", userRol.getUserId());
                 return Mono.just(userRol);
-              })).doOnNext(userRol -> System.out.println(
-                      "UserRol listo para ser guardado: " + userRol))
+              })).doOnNext(userRol -> log.info("UserRol listo para ser guardado: {}", userRol))
               .collectList()
               .flatMapMany(userRolRepository::saveAll)
-              .doOnNext(userRol -> System.out.println(
-                      "Insertando en usuarios_roles: " + userRol))
+              .doOnNext(userRol -> log.info("Insertando en usuarios_roles: {}", userRol))
               .collectList()
               .thenReturn(savedUser);
     }).onErrorResume(e -> {
-      System.out.println("Error saving a user: " + e.getMessage());
+      log.error("❌ Error saving a user: {}", e.getMessage());
       return Mono.error(new RuntimeException("Error saving a user: ", e));
     });
+  }
+
+  @Override
+  public Flux<RolesListResponse> listPublicRoles() {
+    return this.roleRepository.findAll()
+            .filter(role -> !role.getName().equals("ADMIN"))
+            .map(role -> new RolesListResponse(role.getName()));
+  }
+
+  @Override
+  public Mono<ChangePasswordResponse> changeUserPassword(ChangePasswordRequest request) {
+    // find a user by his email
+    return userRepository.findByEmail(request.userEmail())
+            .doOnSubscribe(sub -> log.info(
+                    "\uD83D\uDD0D Buscando usuario con email: {}", request.userEmail()))
+            .doOnNext(user -> log.info("✅ Usuario encontrado: {}", user.getEmail()))
+            .doOnError(error -> log.error("❌ Error al buscar usuario: {}", error.getMessage()))
+            .switchIfEmpty(Mono.error(new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "No user found")))
+            .flatMap(foundUser -> {
+              foundUser.setPassword(passwordEncoder.encode(request.newPassword()));
+              return userRepository.save(foundUser)
+                      .flatMap(savedUser -> {
+                        log.info("Password for user '{}' (ID: {}) was changed successfully.",
+                                savedUser.getName(), savedUser.getId());
+                        return emailService.sendAsync(
+                                        request.userEmail(),
+                                        "Password change",
+                                        "Your new password has been modified")
+                                .onErrorResume(e -> {
+                                  log.error("❌ Error sending password change email: {}", e.getMessage());
+                                  return Mono.empty();
+                                })
+                                .thenReturn(savedUser);
+                      })
+                      .map(savedUser -> new ChangePasswordResponse(
+                              savedUser.getName(),
+                              savedUser.getPassword()));
+            });
   }
 }

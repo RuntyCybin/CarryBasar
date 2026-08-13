@@ -1,6 +1,8 @@
 package com.carry.basar.controller;
 
 import javax.validation.Valid;
+
+import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.ListUsersResponse;
 import com.carry.basar.model.dto.user.UpdateUserResponse;
 import com.carry.basar.utils.Utils;
@@ -28,6 +30,7 @@ public class AuthUserController {
 
   @PutMapping("/update")
   public Mono<UpdateUserResponse> update(@Valid @RequestBody UpdateUserRequest userRequest) {
+    System.out.println("NEW PWD: " + userRequest.newPassword());
     return service.update(userRequest);
   }
 
@@ -54,19 +57,12 @@ public class AuthUserController {
             .flatMapMany(auth -> service.listAllUsers());
   }
 
-  /**
-   * TODO: Solo los administradores pueden ver todos los usuarios
-   */
-  /*@GetMapping("/list")
-  public Flux<ListUsersResponse> listAllUsers() {
+  @GetMapping("/listRoles")
+  public Flux<RolesListResponse> listUserRoles() {
     return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> utils.getAuthenticatedUser(Mono.just(ctx)))
-            .flatMapMany(auth -> {
-              if (!auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                return Flux.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo administradores pueden ver todos los usuarios"));
-              }
-              return service.listAllUsers();
-            });
-  }*/
+            .map(authentication -> authentication)
+            .flatMapMany(service::listAllRolesByUserName);
+  }
 
 }

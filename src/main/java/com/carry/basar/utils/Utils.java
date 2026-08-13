@@ -46,20 +46,20 @@ public class Utils {
 
   public boolean isVerified(CreateUserRequest createUserRequest) {
 
-    if (createUserRequest.getUsername().matches("\\d+")) {
+    if (createUserRequest.username().matches("\\d+")) {
       return false;
     }
 
-    if ((createUserRequest.getUsername() == null || createUserRequest.getUsername().isEmpty()) && (createUserRequest.getUsername().matches("\\d+"))) {
+    if ((createUserRequest.username() == null || createUserRequest.username().isEmpty()) && (createUserRequest.username().matches("\\d+"))) {
       return false;
     }
-    if (createUserRequest.getPassword() == null || createUserRequest.getPassword().isEmpty()) {
+    if (createUserRequest.password() == null || createUserRequest.password().isEmpty()) {
       return false;
     }
-    if (createUserRequest.getEmail() == null || createUserRequest.getEmail().isEmpty()) {
+    if (createUserRequest.email() == null || createUserRequest.email().isEmpty()) {
       return false;
     }
-    if (createUserRequest.getRoles() == null || createUserRequest.getRoles().isEmpty()) {
+    if (createUserRequest.roles() == null || createUserRequest.roles().isEmpty()) {
       return false;
     }
 
@@ -68,9 +68,9 @@ public class Utils {
 
   public User mapUser(CreateUserRequest createUserRequest) {
     User user = new User();
-    user.setName(createUserRequest.getUsername());
-    user.setEmail(createUserRequest.getEmail());
-    user.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
+    user.setName(createUserRequest.username());
+    user.setEmail(createUserRequest.email());
+    user.setPassword(passwordEncoder.encode(createUserRequest.password()));
     return user;
   }
 }

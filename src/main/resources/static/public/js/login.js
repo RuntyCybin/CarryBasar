@@ -1,6 +1,6 @@
 window.addEventListener("DOMContentLoaded", async () => {
     const token = sessionStorage.getItem("token");
-    console.log("0.token: " + token);
+    console.log("login: 0.token: " + token);
 
     // Check token
     if (token) {
@@ -54,6 +54,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             sessionStorage.setItem('username', data.username);
             sessionStorage.setItem('email', data.email);
             sessionStorage.setItem('roles', JSON.stringify(data.roles));
+            sessionStorage.setItem('userId', data.userid);
 
             // Redirigir al dashboard
             window.location.href = '/public/dashboard.html';

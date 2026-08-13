@@ -8,6 +8,22 @@ spring:
     driver-class-name: org.postgresql.Driver
     properties:
       schema: transportsschema
+  mail:
+    host: smtp.mailersend.net
+    port: 587
+    username: MS_JCyxgv@test-z0vklo6xk3el7qrx.mlsender.net
+    password: mssp.Q2jxVKE.jy7zpl9ydqog5vx6.zsvbxYp
+    protocol: smtp
+    properties:
+      mail:
+        debug: true
+        smtp:
+          auth: true
+          starttls.enable: true
+          # Opcional: evita warnings de certificado
+          ssl.trust: smtp.mailersend.net
+      # Solo en desarrollo: log completo del diálogo SMTP
+      # mail.properties.mail.debug: true
 
 server:
   port: 8080
