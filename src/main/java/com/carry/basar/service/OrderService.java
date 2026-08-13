@@ -4,7 +4,7 @@ import com.carry.basar.model.Order;
 import com.carry.basar.model.dto.OrderDto;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
-import com.carry.basar.model.dto.order.RemoveOrderDtoResponse;
+import com.carry.basar.model.dto.order.RemoveOrderResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -20,5 +20,5 @@ public interface OrderService {
 
     Mono<GetOrderResponse> getOrderById(Long orderId);
 
-    Mono<RemoveOrderDtoResponse> removeOrderById(Long orderId);
+    Mono<RemoveOrderResponse> removeOrderById(Long orderId);
 }

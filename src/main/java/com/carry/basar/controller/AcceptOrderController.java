@@ -1,6 +1,6 @@
 package com.carry.basar.controller;
 
-import com.carry.basar.model.dto.accepted_order.AcceptOrderRequest;
+import com.carry.basar.model.dto.accepted_order.AcceptedOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
 import com.carry.basar.service.AcceptOrderService;
 import org.springframework.web.bind.annotation.*;
@@ -21,18 +21,18 @@ public class AcceptOrderController {
 
   /**
    * Endpoint to create an accepted order removing the normal order
-   * @param acceptOrderRequest
+   * @param acceptedOrderRequest
    * @return a DTO for an accepted order
    */
   @PostMapping
-  public Mono<AcceptedOrderResponse> acceptOrder(@Valid @RequestBody AcceptOrderRequest acceptOrderRequest) {
-    return acceptOrderService.createOrder(acceptOrderRequest);
+  public Mono<AcceptedOrderResponse> acceptOrder(@Valid @RequestBody AcceptedOrderRequest acceptedOrderRequest) {
+    return acceptOrderService.createOrder(acceptedOrderRequest);
   }
 
   /**
    * Endpoint to retrieve a specific accepted order by its id and the user who accepted this order
-   * @param userId
-   * @param orderId
+   * @param userId received user id
+   * @param orderId received order id
    * @return a DTO for an accepted order
    */
   @GetMapping

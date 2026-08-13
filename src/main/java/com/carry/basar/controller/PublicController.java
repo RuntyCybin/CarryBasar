@@ -5,10 +5,10 @@ import com.carry.basar.model.User;
 import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
-import com.carry.basar.model.dto.user.ChangePasswordResponseDto;
+import com.carry.basar.model.dto.user.ChangePasswordResponse;
 import com.carry.basar.service.UserService;
 import com.carry.basar.service.EmailService;
-import com.carry.basar.model.dto.user.ChangePasswordRequestDto;
+import com.carry.basar.model.dto.user.ChangePasswordRequest;
 
 
 import javax.validation.Valid;
@@ -39,7 +39,7 @@ public class PublicController {
 
   @PostMapping("/login")
   public Mono<AuthResponse> login(@Valid @RequestBody AuthRequest authRequest) {
-    return service.authenticate(authRequest.getUsername(), authRequest.getPassword());
+    return service.authenticate(authRequest.username(), authRequest.password());
   }
 
   @GetMapping("/getPublicRoles")
@@ -50,7 +50,7 @@ public class PublicController {
   @PostMapping("/register")
   @ResponseStatus(HttpStatus.CREATED)
   public Mono<User> register(@Valid @RequestBody CreateUserRequest user) {
-    log.info("CONTROLLER USER: {}", user.getUsername());
+    log.info("CONTROLLER USER: {}", user.username());
     return service.register(user);
   }
 
@@ -70,7 +70,7 @@ public class PublicController {
    * @return an object with a username and a new password
    */
   @PostMapping("/changePassword")
-  public Mono<ChangePasswordResponseDto> changePassword(@Valid @RequestBody ChangePasswordRequestDto request) {
+  public Mono<ChangePasswordResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
     return service.changeUserPassword(request);
   }
 

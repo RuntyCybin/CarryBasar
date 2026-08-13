@@ -1,7 +1,7 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.model.AcceptedOrders;
-import com.carry.basar.model.dto.accepted_order.AcceptOrderRequest;
+import com.carry.basar.model.dto.accepted_order.AcceptedOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
 import com.carry.basar.model.repository.*;
 import com.carry.basar.service.AcceptOrderService;
@@ -30,7 +30,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
   }
 
   @Override
-  public Mono<AcceptedOrderResponse> createOrder(AcceptOrderRequest request) {
+  public Mono<AcceptedOrderResponse> createOrder(AcceptedOrderRequest request) {
     // 1.encontrar al usuario con el id proporcionado
     return this.userRepository.findById(request.userId())
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))

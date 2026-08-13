@@ -60,9 +60,9 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   public Mono<RoleDto> updateRole(UpdateRoleRequest request) {
-    return roleRepository.findByName(request.getSearchName())
+    return roleRepository.findByName(request.searchName())
             .flatMap(roleFound -> {
-              roleFound.setName(request.getNewName());
+              roleFound.setName(request.newName());
               return roleRepository.save(roleFound)
                       .map(savedRole -> new RoleDto(savedRole.getName()));
             });
