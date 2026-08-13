@@ -8,6 +8,8 @@ import com.carry.basar.model.repository.RoleRepository;
 import com.carry.basar.model.repository.UserRepository;
 import com.carry.basar.model.repository.UserRolRepository;
 import com.carry.basar.service.RoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +18,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class RoleServiceImpl implements RoleService {
+
+  private static final Logger log = LoggerFactory.getLogger(RoleServiceImpl.class);
 
   private final RoleRepository roleRepository;
 
@@ -34,7 +38,7 @@ public class RoleServiceImpl implements RoleService {
     return roleRepository.findByName(name)
             .map(role -> new RoleDto(role.getName()))
             .onErrorResume(e -> {
-              System.out.println("Error searching for a role: " + e.getMessage());
+              log.error("Error searching for a role: {}", e.getMessage());
               return Mono.error(new RuntimeException("Error searching for a role: ", e));
             });
   }
@@ -49,7 +53,7 @@ public class RoleServiceImpl implements RoleService {
               return roleRepository.save(newRole);
             }))
             .onErrorResume(e -> {
-              System.out.println("Error saving a role: " + e.getMessage());
+              log.error("Error saving a role: {}", e.getMessage());
               return Mono.error(new RuntimeException("Error saving a role: ", e));
             });
   }

@@ -61,12 +61,12 @@ public class OrderServiceImpl implements OrderService {
                       HttpStatus.NOT_FOUND,
                       "User not found")))
               .flatMap(user -> {
-                System.out.println("Create order - User: " + user.getEmail() + " due date: " + orderDto.getDueDate());
+                System.out.println("Create order - User: " + user.getEmail() + " due date: " + orderDto.dueDate());
                 Order order = new Order();
-                order.setDescription(orderDto.getDescription());
-                order.setVol(orderDto.getVolume());
+                order.setDescription(orderDto.description());
+                order.setVol(orderDto.volume());
                 order.setOrderDate(LocalDateTime.now());
-                order.setDueDate(orderDto.getDueDate());
+                order.setDueDate(orderDto.dueDate());
                 order.setUserId(user.getId());
                 return orderRepository.save(order)
                     .flatMap(savedOrder -> {

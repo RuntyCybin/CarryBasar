@@ -32,7 +32,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
   @Override
   public Mono<AcceptedOrderResponse> createOrder(AcceptOrderRequest request) {
     // 1.encontrar al usuario con el id proporcionado
-    return this.userRepository.findById(request.getUserId())
+    return this.userRepository.findById(request.userId())
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
             .flatMap(user -> {
               // recogemos los roles del usuario
@@ -41,15 +41,15 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                               .filter(role -> role.getName().equals("TRANSPORTER"))
                               .flatMap(rolTransporter -> {
                                 // 2.encontrar el order con el id proporcionado (una vez completada la 1)
-                                return this.orderRepository.findById(request.getOrderId())
+                                return this.orderRepository.findById(request.orderId())
                                         .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
                                         .flatMap(order -> {
                                           // 3.null porque aun no se ha llevado el order
                                           AcceptedOrders acceptedOrder = new AcceptedOrders(
-                                                  request.getUserId(),
-                                                  request.getOrderId(),
-                                                  request.getShipAt(),
-                                                  request.getShipTo(),
+                                                  request.userId(),
+                                                  request.orderId(),
+                                                  request.shipAt(),
+                                                  request.shipTo(),
                                                   order.getDescription(),
                                                   order.getVol());
                                           return this.acceptedOrdersRepository.save(acceptedOrder)
@@ -71,8 +71,10 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                       .next()
                       // Este error se dispara si el usuario no tiene el rol TRANSPORTER,
                       // o si teniéndolo, la orden no se pudo encontrar o procesar.
-                      .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN,
-                              "User " + user.getId() + " is not authorized as TRANSPORTER or failed to accept order " + request.getOrderId() + ".")));
+                      .switchIfEmpty(Mono.error(new ResponseStatusException(
+                              HttpStatus.FORBIDDEN,
+                              "User " + user.getId() + " is not authorized as TRANSPORTER or failed to accept order "
+                                      + request.orderId() + ".")));
             });
   }
 

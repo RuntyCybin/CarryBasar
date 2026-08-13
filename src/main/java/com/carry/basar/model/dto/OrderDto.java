@@ -2,79 +2,10 @@ package com.carry.basar.model.dto;
 
 import java.time.LocalDateTime;
 
-public class OrderDto {
-    private String description;
-    private Integer volume;
-    private LocalDateTime createdAt;
-    private LocalDateTime dueDate;
-    private Long orderId;
-
-    public OrderDto() {
-    }
-
-    public OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt) {
-        this.orderId = orderId;
-        this.description = description;
-        this.volume = volume;
-        this.createdAt = createdAt;
-    }
-
-    public OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt, LocalDateTime dueDate) {
-        this.orderId = orderId;
-        this.description = description;
-        this.volume = volume;
-        this.createdAt = createdAt;
-        this.dueDate = dueDate;
-    }
-
-    public OrderDto(String description, Integer volume, LocalDateTime createdAt) {
-        this.description = description;
-        this.volume = volume;
-        this.createdAt = createdAt;
-    }
+public record OrderDto(Long orderId, String description, Integer volume, LocalDateTime createdAt,
+                        LocalDateTime dueDate) {
 
     public OrderDto(String description, Integer volume) {
-        this.description = description;
-        this.volume = volume;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Integer getVolume() {
-        return volume;
-    }
-
-    public void setVolume(Integer volume) {
-        this.volume = volume;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Long getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
-
-    public LocalDateTime getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDateTime dueDate) {
-        this.dueDate = dueDate;
+        this(null, description, volume, null, null);
     }
 }
