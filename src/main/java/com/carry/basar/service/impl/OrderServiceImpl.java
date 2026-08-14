@@ -82,8 +82,8 @@ public class OrderServiceImpl implements OrderService {
                                           savedOrder.getVol(),
                                           savedOrder.getOrderDate(),
                                           savedOrder.getDueDate(),
-                                          savedOrder.getFromLocation(),
-                                          savedOrder.getToLocation()));
+                                          savedOrder.getToLocation(),
+                                          savedOrder.getFromLocation()));
                                 });
                       });
             });
