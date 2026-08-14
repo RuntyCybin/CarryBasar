@@ -1,5 +1,6 @@
 package com.carry.basar.config;
 
+import com.carry.basar.constants.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -68,14 +69,14 @@ public class SecurityConfig {
 
   private ServerAuthenticationConverter jwtConverter() {
     return exchange -> Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-            .filter(authHeader -> authHeader.startsWith("Bearer "))
-            .map(authHeader -> authHeader.substring(7))
+            .filter(authHeader -> authHeader.startsWith(SecurityConstants.BEARER_PREFIX))
+            .map(authHeader -> authHeader.substring(SecurityConstants.BEARER_PREFIX.length()))
             .map(token -> {
               Claims claims = jwtUtil.parseToken(token);
               return new UsernamePasswordAuthenticationToken(
                       claims.getSubject(),
                       null,
-                      Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+                      Collections.singletonList(new SimpleGrantedAuthority(SecurityConstants.ROLE_USER_AUTHORITY)));
             });
   }
 

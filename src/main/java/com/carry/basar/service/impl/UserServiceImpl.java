@@ -1,6 +1,7 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.config.JwtUtil;
+import com.carry.basar.constants.RoleConstants;
 import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
@@ -207,7 +208,7 @@ public class UserServiceImpl implements UserService {
   @Override
   public Flux<RolesListResponse> listPublicRoles() {
     return this.roleRepository.findAll()
-            .filter(role -> !role.getName().equals("ADMIN"))
+            .filter(role -> !role.getName().equals(RoleConstants.ADMIN))
             .map(role -> new RolesListResponse(role.getName()));
   }
 
