@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -59,12 +59,20 @@
                             <input type="text" class="form-control" id="description" name="description" required>
                         </div>
                         <div class="mb-3">
-                            <label for="volume" class="form-label">Volumen</label>
+                            <label for="volume" class="form-label">Volumen (metros cubicos)</label>
                             <input type="number" class="form-control" id="volume" name="volume" min="1" required>
                         </div>
                         <div class="mb-3">
                             <label for="dueDate" class="form-label">Fecha límite</label>
                             <input type="date" class="form-control" id="dueDate" name="dueDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fromLocation" class="form-label">Direccion - Desde</label>
+                            <input type="text" class="form-control" id="fromLocation" name="fromLocation" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="toLocation" class="form-label">Direccion - Donde</label>
+                            <input type="text" class="form-control" id="toLocation" name="toLocation" required>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Crear pedido</button>

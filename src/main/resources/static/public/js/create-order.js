@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!token) {
         alert('Sesión inválida. Inicie sesión nuevamente.');
         window.location.href = '/public/login.html';
-        return;
     } else {
         const username = sessionStorage.getItem('username');
         const roles = sessionStorage.getItem('roles');
@@ -21,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
             role_nav_span.textContent = "[CLIENTE]";
         }
 
-
         const form = document.getElementById('createOrderForm');
         if (!form) return;
 
@@ -32,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const volume = parseInt(document.getElementById('volume').value, 10);
             const createdAt = new Date().toISOString().slice(0,19);
             const dueDate = document.getElementById('dueDate').value + 'T00:00:00';
+            const fromLocation = document.getElementById('fromLocation').value.trim();
+            const toLocation = document.getElementById('toLocation').value.trim();
             const token = sessionStorage.getItem('token');
             try {
                 const response = await fetch('/v1/api/order', {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify({ description, volume, createdAt, dueDate })
+                    body: JSON.stringify({ description, volume, createdAt, dueDate, toLocation, fromLocation })
                 });
 
                 if (!response.ok) {
