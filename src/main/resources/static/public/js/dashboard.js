@@ -59,7 +59,7 @@
         // iteramos el data
         for (let i = 0; i < data.length; i++) {
           const order = data[i];
-          console.log(`Pedido ${order.id}: ${order.description}, volumen ${order.vol}, creado el ${order.orderDate}`);
+          console.log(`Pedido ${order.orderId}: ${order.description}, volumen ${order.volume}, creado el ${order.createdAt}`);
 
           const item = document.createElement("div");
           item.innerHTML = `
@@ -68,16 +68,16 @@
             <div class="d-flex gap-2 w-100">
                 <div style="flex: 0 0 30%; min-width: 0;">
                     <h6 class="mb-0" id="desc">${order.description}</h6>
-                    <p class="mb-0 opacity-75">Identificador pedido: ${order.id}</p>
-                    <p class="mb-0 opacity-75" id="volume">Volumen: ${order.vol}</p>
+                    <p class="mb-0 opacity-75">Identificador pedido: ${order.orderId}</p>
+                    <p class="mb-0 opacity-75" id="volume">Volumen: ${order.volume}</p>
                 </div>
                 <div class="d-flex align-items-center justify-content-center" style="flex: 0 0 20%;">
-                  <input type="hidden" id="orderId" value="${order.id}">
+                  <input type="hidden" id="orderId" value="${order.orderId}">
                   <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="btn btn-outline-success">Aceptar</button>
                 </div>
                 <div class="d-flex gap-3" style="flex: 0 0 50%;">
                     <div class="d-flex flex-column align-items-start" style="flex: 1 1 50%;">
-                        <small class="opacity-50 text-nowrap"><p class="mb-0">Creado: </p>${new Date(order.orderDate).toLocaleString()}</small>
+                        <small class="opacity-50 text-nowrap"><p class="mb-0">Creado: </p>${new Date(order.createdAt).toLocaleString()}</small>
                         <small class="opacity-50 text-nowrap"><p class="mb-0">Fecha límite: </p>${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
                     <div class="d-flex flex-column align-items-start" style="flex: 1 1 50%;">
@@ -285,10 +285,10 @@
 
   // Funcion para aceptar orders de transportistas
   window.aceptarOrder = function aceptarOrder(order) {
-    const {id, description, vol, orderDate} = order;
+    const {orderId, description, volume} = order;
     const token = sessionStorage.getItem('token');
     const userId = sessionStorage.getItem('userId');
-    sessionStorage.setItem('accepted_order_id', id);
+    sessionStorage.setItem('accepted_order_id', orderId);
 
     if (!token || !userId) {
       alert('Sesión inválida. Inicie sesión nuevamente.');
@@ -305,12 +305,12 @@
         },
         // TODO: cambiar fecha por las recogidas de los date time pickers
         body: JSON.stringify({
-          orderId: id,
+          orderId: orderId,
           userId: userId,
           shipAt: new Date().toISOString(),
           shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
           description: description,
-          volumen: vol
+          volumen: volume
         })
       }).then(async res => {
         if (res.status === 200) {
