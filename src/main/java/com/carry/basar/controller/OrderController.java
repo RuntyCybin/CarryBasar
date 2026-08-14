@@ -23,7 +23,7 @@ public class OrderController {
 
     /**
      * Endpoint to create an order if you are a CLIENT user
-     * @param orderDto
+     * @param orderDto a body with a name, description, etc
      * @return a OrderDto object
      */
     @PostMapping
@@ -42,7 +42,7 @@ public class OrderController {
     }
 
     @GetMapping("/all")
-    public Flux<Order> getAllOrders() {
+    public Flux<OrderDto> getAllOrders() {
         return orderService.getAllOrders();
     }
 
