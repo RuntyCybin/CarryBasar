@@ -31,7 +31,10 @@ CREATE TABLE transportsschema.orders (
     description VARCHAR(200),
     vol SERIAL not null,
     orderdate timestamp default current_timestamp,
+    due_date timestamp,
     userid SERIAL not null,
+    from_location VARCHAR(150),
+    to_location VARCHAR(150),
     constraint fk_user foreign key (userid) references transportsschema.users(id) on delete cascade
 );
 

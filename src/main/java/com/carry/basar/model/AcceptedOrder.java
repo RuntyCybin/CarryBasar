@@ -6,7 +6,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDateTime;
 
 @Table("accepted_orders")
-public class AcceptedOrders {
+public class AcceptedOrder {
 
   @Column("userid")
   private Long userId;
@@ -26,7 +26,7 @@ public class AcceptedOrders {
   @Column("vol")
   private Integer vol;
 
-  public AcceptedOrders(AcceptedOrderPk pk, LocalDateTime acceptedAt, LocalDateTime shippedAt, String description, Integer vol) {
+  public AcceptedOrder(AcceptedOrderPk pk, LocalDateTime acceptedAt, LocalDateTime shippedAt, String description, Integer vol) {
     if (null == pk) {
       throw new IllegalArgumentException("AcceptedOrderPk cannot be null");
     }
@@ -38,8 +38,8 @@ public class AcceptedOrders {
     this.vol = vol;
   }
 
-  public AcceptedOrders(Long userId, Long orderId, LocalDateTime createdAt, LocalDateTime shippedAt,
-                        String description, Integer vol) {
+  public AcceptedOrder(Long userId, Long orderId, LocalDateTime createdAt, LocalDateTime shippedAt,
+                       String description, Integer vol) {
     this.userId = userId;
     this.orderId = orderId;
     this.createdAt = createdAt;
@@ -48,7 +48,7 @@ public class AcceptedOrders {
     this.vol = vol;
   }
 
-  public AcceptedOrders() {
+  public AcceptedOrder() {
   }
 
   public Long getUserId() {

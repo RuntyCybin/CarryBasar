@@ -1,6 +1,6 @@
 package com.carry.basar.service.impl;
 
-import com.carry.basar.model.AcceptedOrders;
+import com.carry.basar.model.AcceptedOrder;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
 import com.carry.basar.model.repository.*;
@@ -45,7 +45,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                                         .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
                                         .flatMap(order -> {
                                           // 3.null porque aun no se ha llevado el order
-                                          AcceptedOrders acceptedOrder = new AcceptedOrders(
+                                          AcceptedOrder acceptedOrder = new AcceptedOrder(
                                                   request.userId(),
                                                   request.orderId(),
                                                   request.shipAt(),
@@ -87,14 +87,14 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
               // 2.encontrar el order con el id proporcionado
               return acceptedOrdersRepository.findByOrderIdAndUserId(orderId, userId)
                       .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Accepted order not found")))
-                      .map(acceptedOrders -> {
+                      .map(acceptedOrder -> {
                         return new AcceptedOrderResponse(
-                                acceptedOrders.getOrderId(),
-                                acceptedOrders.getDescription(),
-                                acceptedOrders.getUserId(),
-                                acceptedOrders.getCreatedAt(),
-                                acceptedOrders.getShippedAt(),
-                                acceptedOrders.getVol()
+                                acceptedOrder.getOrderId(),
+                                acceptedOrder.getDescription(),
+                                acceptedOrder.getUserId(),
+                                acceptedOrder.getCreatedAt(),
+                                acceptedOrder.getShippedAt(),
+                                acceptedOrder.getVol()
                         );
                       });
             });

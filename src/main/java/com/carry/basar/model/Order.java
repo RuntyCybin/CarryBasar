@@ -23,6 +23,12 @@ public class Order {
     @Column("userid")
     private Long userId;
 
+    @Column("from_location")
+    private String fromLocation;
+
+    @Column("to_location")
+    private String toLocation;
+
     // constructors
     public Order() {
     }
@@ -74,5 +80,21 @@ public class Order {
 
     public void setDueDate(LocalDateTime dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public String getFromLocation() {
+        return fromLocation;
+    }
+
+    public void setFromLocation(String fromLocation) {
+        this.fromLocation = fromLocation;
+    }
+
+    public String getToLocation() {
+        return toLocation;
+    }
+
+    public void setToLocation(String toLocation) {
+        this.toLocation = toLocation;
     }
 }
