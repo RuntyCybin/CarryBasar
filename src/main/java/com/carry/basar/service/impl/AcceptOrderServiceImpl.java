@@ -1,5 +1,6 @@
 package com.carry.basar.service.impl;
 
+import com.carry.basar.constants.RoleConstants;
 import com.carry.basar.model.AcceptedOrder;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
@@ -38,7 +39,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
               // recogemos los roles del usuario
               return this.userRolRepository.findByUserId(user.getId())
                       .flatMap(userRols -> this.roleRepository.findById(userRols.getRoleId())
-                              .filter(role -> role.getName().equals("TRANSPORTER"))
+                              .filter(role -> role.getName().equals(RoleConstants.TRANSPORTER))
                               .flatMap(rolTransporter -> {
                                 // 2.encontrar el order con el id proporcionado (una vez completada la 1)
                                 return this.orderRepository.findById(request.orderId())
@@ -109,7 +110,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                     // 2. Verificar que el usuario tiene rol TRANSPORTER
                     this.userRolRepository.findByUserId(user.getId())
                             .flatMap(userRols -> this.roleRepository.findById(userRols.getRoleId()))
-                            .filter(role -> "TRANSPORTER".equals(role.getName()))
+                            .filter(role -> RoleConstants.TRANSPORTER.equals(role.getName()))
                             .hasElements()
                             .flatMapMany(rolTransporter -> {
                               if (!rolTransporter) {
