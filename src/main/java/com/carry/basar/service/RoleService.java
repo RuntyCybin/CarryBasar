@@ -19,4 +19,6 @@ public interface RoleService {
     Mono<String> deleteRole(String roleName, String username);
 
     Flux<RolesListResponse> listAllRoles(String username);
+
+    Flux<RolesListResponse> listRolesForSignUp();
 }

@@ -6,6 +6,7 @@ import com.carry.basar.model.dto.auth.AuthResponse;
 import com.carry.basar.model.dto.role.RolesListResponse;
 import com.carry.basar.model.dto.user.CreateUserRequest;
 import com.carry.basar.model.dto.user.ChangePasswordResponse;
+import com.carry.basar.service.RoleService;
 import com.carry.basar.service.UserService;
 import com.carry.basar.service.EmailService;
 import com.carry.basar.model.dto.user.ChangePasswordRequest;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,13 +30,15 @@ import reactor.core.publisher.Mono;
 public class PublicController {
 
   private final UserService service;
+  private final RoleService roleService;
   private final EmailService emailService;
 
   private static final Logger log = LoggerFactory.getLogger(PublicController.class);
 
-  public PublicController(UserService service, EmailService emailService) {
+  public PublicController(UserService service, EmailService emailService, RoleService roleService) {
     this.service = service;
     this.emailService = emailService;
+    this.roleService = roleService;
   }
 
   @PostMapping("/login")
@@ -42,9 +46,9 @@ public class PublicController {
     return service.authenticate(authRequest.username(), authRequest.password());
   }
 
-  @GetMapping("/getPublicRoles")
-  public Flux<RolesListResponse> listPublicRoles() {
-    return service.listPublicRoles();
+  @GetMapping("/listRolesForSignUpForm")
+  public Flux<RolesListResponse> listRolesForSignUp() {
+    return roleService.listRolesForSignUp();
   }
 
   @PostMapping("/register")

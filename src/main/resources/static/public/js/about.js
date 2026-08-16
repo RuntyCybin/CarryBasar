@@ -5,10 +5,10 @@
     if (!token) {
         window.location.href = '/public/login.html';
         return;
-    } else {
-        const username = sessionStorage.getItem('username');
-        const roles = sessionStorage.getItem('roles');
     }
+
+    const username = sessionStorage.getItem('username');
+    const roles = sessionStorage.getItem('roles');
 
     document.getElementById('username').textContent = username;
 

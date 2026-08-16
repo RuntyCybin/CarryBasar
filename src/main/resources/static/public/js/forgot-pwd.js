@@ -34,7 +34,7 @@
       }).then(data => {
         console.log("RESPONSE: " + data.json());
         if (data.status === 200) {
-          showBootstrapAlert('Contraseña cambiada correctamente');
+          showAlert('Contraseña cambiada correctamente');
           setTimeout(() => {
             window.location.href = '/public/login.html';
           }, 500);
@@ -61,23 +61,23 @@
     }
   });
 
-  // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
-  function showBootstrapAlert(message, duration = 7000) {
+  // Muestra un alert con fade in/out durante `duration` ms
+  function showAlert(message, duration = 7000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-success fade';
+    alertDiv.className = 'bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300';
     alertDiv.setAttribute('role', 'alert');
     alertDiv.textContent = message;
 
     alertContainer.appendChild(alertDiv);
 
-    // se añade "show" en el siguiente frame para que la transicion de fade-in se aplique
-    requestAnimationFrame(() => alertDiv.classList.add('show'));
+    // se quita "opacity-0" en el siguiente frame para que la transicion de fade-in se aplique
+    requestAnimationFrame(() => alertDiv.classList.remove('opacity-0'));
 
     setTimeout(() => {
-      alertDiv.classList.remove('show'); // dispara el fade-out
+      alertDiv.classList.add('opacity-0'); // dispara el fade-out
       alertDiv.addEventListener('transitionend', () => alertDiv.remove(), { once: true });
     }, duration);
   }

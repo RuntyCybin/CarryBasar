@@ -1,11 +1,50 @@
 (function () {
+
+    // ............................................................................
+    // metadatos de presentación para el listbox de roles (insignia + texto de apoyo)
+    const ROLE_META = {
+        USER: {initial: 'U', color: 'bg-gray-500', description: 'Cuenta base para comprar productos y solicitar encargos.'},
+        CARRY: {initial: 'C', color: 'bg-blue-600', description: 'Crea encargos para que un transportista los traiga.'},
+        TRANSPORTER: {initial: 'T', color: 'bg-emerald-600', description: 'Acepta y entrega los encargos de otros usuarios.'}
+    };
+
+    function roleMeta(roleName) {
+        return ROLE_META[roleName] || {initial: roleName.charAt(0).toUpperCase(), color: 'bg-indigo-500', description: ''};
+    }
+    // ............................................................................
+
     document.addEventListener('DOMContentLoaded', function () {
 
         // ............................................................................
-        // recogemos los roles del endpoint publico para el dropdown
+        // recogemos los roles del endpoint publico y montamos el listbox personalizado
         const rolesList = document.getElementById("rolesList");
+        const rolesButton = document.getElementById("rolesButton");
+        const rolesButtonText = document.getElementById("rolesButtonText");
+        const rolesOptions = document.getElementById("rolesOptions");
         rolesList.innerHTML = ""; // Limpiar contenido previo
-        fetch('/public/usr/getPublicRoles').then(async res => {
+        rolesOptions.innerHTML = "";
+
+        function updateRolesButtonText() {
+            const selected = Array.from(rolesList.selectedOptions).map(opt => opt.value);
+            rolesButtonText.textContent = selected.length ? selected.join(', ') : 'Selecciona el rol';
+            rolesButtonText.classList.toggle('text-gray-500', selected.length === 0);
+            rolesButtonText.classList.toggle('text-gray-900', selected.length > 0);
+        }
+
+        function toggleRolesPanel(show) {
+            const expand = show === undefined ? rolesOptions.classList.contains('hidden') : show;
+            rolesOptions.classList.toggle('hidden', !expand);
+            rolesButton.setAttribute('aria-expanded', String(expand));
+        }
+
+        rolesButton.addEventListener('click', () => toggleRolesPanel());
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#rolesButton') && !e.target.closest('#rolesOptions')) {
+                toggleRolesPanel(false);
+            }
+        });
+
+        fetch('/public/usr/listRolesForSignUpForm').then(async res => {
             // Gestión del 401/403 (no autorizado)
             if (!res.ok) throw new Error('No autorizado');
 
@@ -24,8 +63,38 @@
                 option.value = role;
                 option.textContent = role;
                 rolesList.appendChild(option);
+
+                const meta = roleMeta(role);
+                const item = document.createElement('li');
+                item.setAttribute('role', 'option');
+                item.setAttribute('aria-selected', 'false');
+                item.dataset.value = role;
+                item.className = 'roleOption group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-blue-600 hover:text-white';
+                item.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${meta.color} text-xs font-semibold text-white">${meta.initial}</span>
+                        <span class="ml-3 block">
+                            <span class="block truncate font-medium">${role}</span>
+                            <span class="block truncate text-xs text-gray-500 group-hover:text-blue-200">${meta.description}</span>
+                        </span>
+                    </div>
+                    <span class="roleCheck hidden absolute inset-y-0 right-0 flex items-center pr-4 text-blue-600 group-hover:text-white">
+                        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                        </svg>
+                    </span>`;
+
+                item.addEventListener('click', () => {
+                    option.selected = !option.selected;
+                    item.setAttribute('aria-selected', String(option.selected));
+                    item.querySelector('.roleCheck').classList.toggle('hidden', !option.selected);
+                    updateRolesButtonText();
+                });
+
+                rolesOptions.appendChild(item);
             });
 
+            updateRolesButtonText();
         });
         // ............................................................................
 

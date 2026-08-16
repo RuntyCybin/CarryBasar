@@ -14,6 +14,16 @@
   document.getElementById('username').textContent = username;
   document.getElementById("userNameMod").value = username
   document.getElementById("userEmail").value = email;
+
+  // comprobamos el rol de usuario
+  if (userRoles.includes("USER") && userRoles.includes("TRANSPORTER")) {
+    // indicador del rol en la barra de navegacion
+    document.getElementById("roleUser").textContent = "[TRANSPORTISTA]";
+  } else if (userRoles.includes("ADMIN")) {
+    window.location.href = '/public/dashboardAdmin.html';
+    return;
+  }
+
   const rolesSelect = document.getElementById("rolesList");
   rolesSelect.innerHTML = ""; // Limpiar contenido previo
 
@@ -81,7 +91,7 @@
           return res.json();
         })
         .then(data => {
-          showBootstrapAlert('The user was updated successfully');
+          showAlert('The user was updated successfully');
           setTimeout(() => {
             sessionStorage.clear();
             window.location.href = '/public/login.html';
@@ -91,23 +101,23 @@
     });
   // ............................................................................
 
-  // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
-  function showBootstrapAlert(message, duration = 5000) {
+  // Muestra un alert con fade in/out durante `duration` ms
+  function showAlert(message, duration = 5000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-success fade';
+    alertDiv.className = 'bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300';
     alertDiv.setAttribute('role', 'alert');
     alertDiv.textContent = message;
 
     alertContainer.appendChild(alertDiv);
 
-    // se añade "show" en el siguiente frame para que la transicion de fade-in se aplique
-    requestAnimationFrame(() => alertDiv.classList.add('show'));
+    // se quita "opacity-0" en el siguiente frame para que la transicion de fade-in se aplique
+    requestAnimationFrame(() => alertDiv.classList.remove('opacity-0'));
 
     setTimeout(() => {
-      alertDiv.classList.remove('show'); // dispara el fade-out
+      alertDiv.classList.add('opacity-0'); // dispara el fade-out
       alertDiv.addEventListener('transitionend', () => alertDiv.remove(), { once: true });
     }, duration);
   }

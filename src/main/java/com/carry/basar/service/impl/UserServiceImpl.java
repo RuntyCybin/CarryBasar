@@ -206,13 +206,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public Flux<RolesListResponse> listPublicRoles() {
-    return this.roleRepository.findAll()
-            .filter(role -> !role.getName().equals(RoleConstants.ADMIN))
-            .map(role -> new RolesListResponse(role.getName()));
-  }
-
-  @Override
   public Mono<ChangePasswordResponse> changeUserPassword(ChangePasswordRequest request) {
     // find a user by his email
     return userRepository.findByEmail(request.userEmail())
