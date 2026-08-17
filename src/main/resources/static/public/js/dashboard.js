@@ -6,6 +6,13 @@
   const BTN_DANGER = 'border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded transition-colors font-medium';
   const LIST_ITEM = 'flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
 
+  // Escapa texto antes de insertarlo en innerHTML para evitar XSS
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value ?? '';
+    return div.innerHTML;
+  }
+
   // comprobamos si el token existe
   if (!token) {
     window.location.href = '/public/login.html';
@@ -25,7 +32,7 @@
 
       // texto del usuario tipo TRANSPORTER
       const descripcionDashboard = document.getElementById("descDashboard");
-      descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span class="font-semibold">${username}</span> selecciona algun order para llevar.</p>`;
+      descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span class="font-semibold">${escapeHtml(username)}</span> selecciona algun order para llevar.</p>`;
 
       // menu de botones superior derecha
       const btnsCerrarCrear = document.getElementById("salirCrearBtns");
@@ -43,7 +50,7 @@
       }).then(async res => {
 
         // Gestión del 500
-        if (res.status == 500) {
+        if (res.status === 500) {
           // Leemos el cuerpo para obtener el mensaje que envía el backend
           const errorBody = await res.json().catch(() => ({}));
           const errorMsg = errorBody.error || "Internal server error";
@@ -72,13 +79,12 @@
                 class="rounded-full flex-shrink-0">
             <div class="flex gap-2 w-full">
                 <div class="basis-[30%] min-w-0">
-                    <h6 class="font-semibold text-sm" id="desc">${order.description}</h6>
-                    <p class="text-gray-500 text-sm">Identificador pedido: ${order.orderId}</p>
-                    <p class="text-gray-500 text-sm" id="volume">Volumen: ${order.volume}</p>
+                    <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
+                    <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
+                    <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                 </div>
                 <div class="basis-[20%] flex items-center justify-center">
-                  <input type="hidden" id="orderId" value="${order.orderId}">
-                  <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="${BTN_SUCCESS}">Aceptar</button>
+                  <button type="button" class="aceptarBtn ${BTN_SUCCESS}">Aceptar</button>
                 </div>
                 <div class="basis-[50%] flex gap-3">
                     <div class="flex flex-col items-start basis-1/2">
@@ -86,8 +92,8 @@
                         <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Fecha límite: </span>${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
                     <div class="flex flex-col items-start basis-1/2">
-                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Origen: </span>${order.fromLocation}</small>
-                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Destino: </span>${order.toLocation}</small>
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Origen: </span>${escapeHtml(order.fromLocation)}</small>
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Destino: </span>${escapeHtml(order.toLocation)}</small>
                     </div>
                 </div>
             </div>`;
@@ -95,6 +101,7 @@
           //item.href = "accept-order.html";
 
           item.className = LIST_ITEM;
+          item.querySelector('.aceptarBtn').addEventListener('click', () => aceptarOrder(order));
 
           listContainer.appendChild(item);
         }
@@ -102,7 +109,7 @@
         console.error(err);
 
         // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-        alert(err.errorMsg.includes("Internal server")
+        alert(err.message.includes("Internal server")
           ? 'No se pudieron obtener tus pedidos: ' + err.message
           : 'Sesión inválida. Inicie sesión nuevamente.');
 
@@ -119,7 +126,7 @@
 
       // texto del usuario tipo CARRY
       const descripcionDashboard = document.getElementById("descDashboard");
-      descripcionDashboard.innerHTML = `<p id="descDashboard">Listado de orders creados por <span class="font-semibold">${username}</span>.</p>`;
+      descripcionDashboard.innerHTML = `<p id="descDashboard">Listado de orders creados por <span class="font-semibold">${escapeHtml(username)}</span>.</p>`;
 
       const btnsCerrarCrear = document.getElementById("salirCrearBtns");
       btnsCerrarCrear.innerHTML = `
@@ -137,7 +144,7 @@
         console.log("STATUS: " + res.status);
 
         // Gestión del 500
-        if (res.status == 500) {
+        if (res.status === 500) {
           // Leemos el cuerpo para obtener el mensaje que envía el backend
           const errorBody = await res.json().catch(() => ({}));
           const errorMsg = errorBody.error || "Internal server error";
@@ -165,7 +172,7 @@
           throw new Error('No autorizado');
         }
 
-        // Todo correcto
+        // OK
         if (res.status === 200) {
           console.log("Orders obtenidos correctamente");
           res.json().then(data => {
@@ -184,27 +191,27 @@
                     class="rounded-full flex-shrink-0">
                 <div class="flex flex-wrap items-center gap-4 w-full">
                   <div class="min-w-0">
-                      <h6 class="font-semibold text-sm" id="desc">${order.description}</h6>
-                      <p class="text-gray-500 text-sm">Identificador pedido: ${order.orderId}</p>
-                      <p class="text-gray-500 text-sm">Volumen: ${order.volume}</p>
+                      <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
+                      <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
+                      <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                   </div>
-                  <input type="hidden" id="orderId" value="${order.orderId}">
                   <div class="flex gap-6">
                     <div>
                       <small class="block text-gray-400 text-xs whitespace-nowrap">Creado: ${new Date(order.createdAt).toLocaleString()}</small>
                       <small class="block text-gray-400 text-xs whitespace-nowrap">Fecha límite: ${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
                     <div>
-                      <small class="block text-gray-400 text-xs whitespace-nowrap">Desde: ${order.fromLocation}</small>
-                      <small class="block text-gray-400 text-xs whitespace-nowrap">Donde: ${order.toLocation}</small>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Desde: ${escapeHtml(order.fromLocation)}</small>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Donde: ${escapeHtml(order.toLocation)}</small>
                     </div>
                   </div>
                   <div class="ml-auto">
-                    <button type="button" id="eliminarBtn" onclick="eliminarOrder('${order.orderId}')" class="${BTN_DANGER}">Eliminar</button>
+                    <button type="button" class="eliminarBtn ${BTN_DANGER}">Eliminar</button>
                   </div>
                 </div>`;
 
               item.className = LIST_ITEM;
+              item.querySelector('.eliminarBtn').addEventListener('click', () => eliminarOrder(order.orderId));
 
               listContainer.appendChild(item);
             }
@@ -218,7 +225,7 @@
         console.error(err);
 
         // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-        alert(err.errorMsg.includes("Internal server")
+        alert(err.message.includes("Internal server")
           ? 'No se pudieron obtener tus pedidos: ' + err.message
           : 'Sesión inválida. Inicie sesión nuevamente.');
 
@@ -231,9 +238,8 @@
     }
   }
 
-
   // Muestra un alert con fade in/out durante `duration` ms
-  function showAlert(message, duration = 5000) {
+      function showAlert(message, duration = 5000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
@@ -303,8 +309,8 @@
       return;
     }
 
-    if (confirm('¿Estás seguro de aceptar este order?')) {
-      fetch(`/v1/api/acceptOrder/create`, {
+    if (confirm('¿Estás seguro de aceptar esta orden?')) {
+      fetch(`/v1/api/acceptOrder`, {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + token,
@@ -321,7 +327,7 @@
         })
       }).then(async res => {
         if (res.status === 200) {
-          alert('Order aceptado correctamente.');
+          sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
           //window.location.href = '/public/transport-orders.html';
           window.location.reload();
         } else if (res.status === 404) {

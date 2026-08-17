@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(message);
                 }
 
-                alert('Pedido creado correctamente!');
+                sessionStorage.setItem('pendingAlert', 'Pedido creado correctamente!');
                 form.reset();
                 // Redirige o actualiza lista si es necesario
                 window.location.href = 'dashboard.html';

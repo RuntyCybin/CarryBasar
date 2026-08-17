@@ -43,11 +43,7 @@
         }
       }).catch(err => {
         console.error(err);
-
-        // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-        alert(err.errorMsg.includes("Internal server")
-          ? 'No se pudieron obtener tus pedidos: ' + err.message
-          : 'Sesión inválida. Inicie sesión nuevamente.');
+        alert('No se pudo cambiar la contraseña: ' + err.message);
 
         sessionStorage.clear();
         window.location.href = '/public/login.html';
