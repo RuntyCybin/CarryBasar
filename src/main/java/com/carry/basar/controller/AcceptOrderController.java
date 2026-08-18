@@ -20,8 +20,8 @@ public class AcceptOrderController {
   }
 
   /**
-   * Endpoint to create an accepted order removing the normal order
-   * @param acceptedOrderRequest
+   * Endpoint to create an accepted order removing from the normal order
+   * @param acceptedOrderRequest : request body to create the acceptance
    * @return a DTO for an accepted order
    */
   @PostMapping
@@ -42,7 +42,7 @@ public class AcceptOrderController {
 
   /**
    * Endpoint to retrieve all the accepted orders for a TRANSPORTER user
-   * @param userId
+   * @param userId : user id recovered from the session
    * @return a list of DTO's of accepted orders of a TRANSPORTER user
    */
   @GetMapping("/getAcceptedOrders/{userId}")
@@ -52,8 +52,8 @@ public class AcceptOrderController {
 
   /**
    * Endpoint that deletes an accepted order
-   * @param orderId
-   * @param userId
+   * @param orderId : order id recovered from th field
+   * @param userId : user id recovered from the session
    * @return a String success message
    */
   @DeleteMapping

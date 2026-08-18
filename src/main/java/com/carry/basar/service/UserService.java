@@ -24,8 +24,6 @@ public interface UserService {
 
   Flux<RolesListResponse> listAllRolesByUserName(String username);
 
-  Flux<RolesListResponse> listPublicRoles();
-
   Mono<ChangePasswordResponse> changeUserPassword(ChangePasswordRequest request);
 
 }

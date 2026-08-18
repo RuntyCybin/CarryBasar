@@ -4,79 +4,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Registro</title>
     <link rel="icon" href="/public/img/favicon.ico" type="image/x-icon">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-gray-50">
 
-    <main class="container my-5">
-        <form id="signUpForm">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <h1>Alta de usuario</h1>
-                    </div>
-                </div>
+<main class="max-w-2xl mx-auto w-full my-8 px-4">
+    <form id="signUpForm" class="bg-white rounded-lg shadow p-8">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">Alta de usuario</h1>
+                <p id="descDashboard" class="text-gray-600 text-sm mt-1">Formulario a rellenar para darse de alta.</p>
+            </div>
+            <div class="flex gap-2" id="salirCrearBtns">
+                <button type="submit"
+                        class="border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded transition-colors font-medium">
+                    Registrar
+                </button>
+                <button type="button" id="logoutBtn"
+                        class="border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded transition-colors font-medium">
+                    Salir
+                </button>
+            </div>
+        </div>
 
-                <!-- TITULO & BOTONES -->
-                <div class="row">
-                    <div class="col">
-                        <p id="descDashboard">Formulario a rellenar para darse de alta.</p>
-                    </div>
-                    <div class="col" style="text-align: right;">
-                        <div class="btn-group btn-group-lg" role="group" aria-label="Large button group"
-                            id="salirCrearBtns">
-                            <button type="submit" class="btn btn-outline-primary">Registrar</button>
-                            <button type="button" id="logoutBtn" class="btn btn-outline-primary">Salir</button>
-                        </div>
-                    </div>
-                </div>
+        <div class="space-y-4">
+            <div>
+                <label for="userName" class="block mb-1 text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="userName" name="nombre"
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="userEmail" class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="userEmail" name="email"
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-gray-500 text-xs mt-1">Su email no sera compartido con nadie.</p>
+            </div>
+            <div>
+                <label for="userPassword" class="block mb-1 text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="userPassword" name="password"
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="userPassword2" class="block mb-1 text-sm font-medium text-gray-700">Repite Password</label>
+                <input type="password" id="userPassword2" name="password2"
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-gray-500 text-xs mt-1">Repite el password para verificarlo.</p>
+            </div>
+            <div>
+                <label id="rolesLabel" class="block mb-1 text-sm font-medium text-gray-700">Roles</label>
+                <div class="relative">
+                    <button type="button" id="rolesButton" aria-haspopup="listbox" aria-expanded="false"
+                            aria-labelledby="rolesLabel rolesButtonText"
+                            class="relative w-full cursor-default rounded border border-gray-300 bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm">
+                        <span id="rolesButtonText" class="block truncate text-gray-500">Selecciona uno o varios roles</span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.24a.75.75 0 011.06.02L10 15.148l2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                    </button>
 
-                <!-- NOMBRE EMAIL PWD -->
-                <div class="row">
-                    <div class="col">
-                        <div class="mb-3">
-                            <label for="userName" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="userName" aria-describedby="emailHelp"
-                                name="nombre">
-                        </div>
-                        <div class="mb-3">
-                            <label for="userEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="userEmail" aria-describedby="emailHelp"
-                                name="email">
-                            <div id="emailHelp" class="form-text">Su email no sera compartido con nadie.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="userPassword" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="userPassword" name="password">
-                        </div>
-                        <div class="mb-3">
-                            <label for="userPassword2" class="form-label">Repite Password</label>
-                            <input type="password" class="form-control" id="userPassword2" name="password2">
-                            <div id="emailHelp" class="form-text">Repite el password para verificarlo.</div>
-                        </div>
-                    </div>
-                </div>
+                    <ul id="rolesOptions" role="listbox" aria-multiselectable="true" tabindex="-1"
+                        class="absolute z-10 mt-1 hidden max-h-60 w-full overflow-auto rounded border border-gray-200 bg-white py-1 text-base shadow-lg focus:outline-none sm:text-sm"></ul>
 
-                <!-- LISTADO ROLES -->
-                <div class="row">
-                    <div class="col">
-                        <div class="mb-3">
-                            <label for="roles" class="form-label">Roles</label>
-                            <select class="form-select" id="rolesList" name="roles" multiple required></select>
-                        </div>
-                    </div>
+                    <select id="rolesList" name="roles" multiple required aria-hidden="true" tabindex="-1"
+                            class="sr-only" aria-label="Roles seleccionados"></select>
                 </div>
             </div>
-        </form>
-    </main>
+        </div>
+    </form>
+</main>
 
-    <footer class="bg-dark text-white text-center p-3" style="position: fixed; bottom: 0; left: 0; width: 100%;">
-        <p>Derechos reservados por Carry Basar &copy; 2025</p>
-    </footer>
-    <script src="/public/js/register.js"></script>
+<footer class="bg-gray-900 text-white text-center p-3">
+    <p>Derechos reservados por Carry Basar &copy; 2025</p>
+</footer>
+<script src="/public/js/register.js"></script>
 </body>
+
 </html>

@@ -5,67 +5,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body,
-        html {
+    <link rel="icon" href="/public/img/favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        html,
+        body {
             height: 100%;
+            margin: 0;
         }
 
-        .d-flex-column {
+        body {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
         }
 
         main {
-            flex: 1;
+            flex: 1 0 auto;
+        }
+
+        footer {
+            flex-shrink: 0;
         }
     </style>
 </head>
 
-<body class="d-flex-column">
-    <header class="bg-dark text-white text-center p-3">
-        <nav>
-            <a href="dashboard.html" class="text-white m-2">Dashboard</a>
-            <a href="about.html" class="text-white m-2">Sobre mí</a>
-            <a href="contact.html" class="text-white m-2">Contacto</a>
-            <a href="profile.html" class="text-white m-2">Perfil</a>
-        </nav>
-    </header>
-    <main class="container my-5">
-        <h1>Contacto</h1>
-        <form id="contact-form">
-            <div class="mb-3">
-                <label for="name" class="form-label">Nombre:</label>
-                <input type="text" class="form-control" id="name" name="name" required>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo:</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="mb-3">
-                <label for="message" class="form-label">Mensaje:</label>
-                <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Enviar</button>
-        </form>
-    </main>
-    <footer class="bg-dark text-white text-center p-3">
-        <p>Derechos reservados &copy; 2025</p>
-    </footer>
-    <script>
-        document.getElementById('contact-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const message = document.getElementById('message').value;
+<body class="bg-gray-50">
 
-            console.log('Formulario enviado:', { name, email, message });
-            alert('¡Gracias por contactarme!');
-            this.reset();
-        });
-    </script>
+<header class="bg-gray-900 text-white p-3">
+    <nav class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-4">
+            <a href="dashboard.html" class="hover:text-gray-300">Dashboard</a>
+            <a href="about.html" class="hover:text-gray-300">Sobre mí</a>
+            <a href="contact.html" class="hover:text-gray-300">Contacto</a>
+            <a href="profile.html" class="hover:text-gray-300">Perfil</a>
+        </div>
+        <span class="text-gray-300 text-sm" id="roleUser"></span>
+    </nav>
+</header>
+
+<main class="max-w-5xl mx-auto w-full my-8 px-4">
+
+    <section class="bg-white rounded-lg shadow p-8 mb-8">
+        <h1 class="text-3xl font-bold mb-2">Contacto</h1>
+        <p class="text-gray-600">
+            Hola <span id="username" class="font-semibold"></span>, si tienes dudas sobre tus pedidos,
+            problemas con un envío o sugerencias para mejorar CarryBasar, escríbenos y te responderemos
+            lo antes posible.
+        </p>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <form id="contact-form" class="md:col-span-2 bg-white rounded-lg shadow p-8 space-y-4">
+            <div>
+                <label for="name" class="block mb-1 text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="name" name="name" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Correo</label>
+                <input type="email" id="email" name="email" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="message" class="block mb-1 text-sm font-medium text-gray-700">Mensaje</label>
+                <textarea id="message" name="message" rows="4" required
+                          class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <button type="submit"
+                    class="border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded transition-colors font-medium">
+                Enviar
+            </button>
+        </form>
+
+        <div class="bg-white rounded-lg shadow p-6 space-y-4 h-fit">
+            <h2 class="font-semibold">¿Con qué te podemos ayudar?</h2>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700">Pedidos (rol CARRY)</h3>
+                <p class="text-gray-500 text-sm">Dudas al crear un pedido, direcciones incorrectas o
+                    seguimiento de un envío ya creado.</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700">Transporte (rol TRANSPORTER)</h3>
+                <p class="text-gray-500 text-sm">Incidencias al aceptar pedidos o gestionar los envíos que
+                    ya tienes asignados.</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700">Cuenta</h3>
+                <p class="text-gray-500 text-sm">Problemas de acceso, cambio de contraseña o gestión de
+                    roles de tu perfil.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-gray-900 text-white text-center p-3">
+    <p>Derechos reservados por Carry Basar &copy; 2025</p>
+</footer>
+
+<script src="/public/js/contact.js"></script>
 </body>
 
 </html>

@@ -113,4 +113,11 @@ public class RoleServiceImpl implements RoleService {
                       .map(role -> new RolesListResponse(role.getName()));
             });
   }
+
+  @Override
+  public Flux<RolesListResponse> listRolesForSignUp() {
+    return this.roleRepository
+            .findTransporterAndCarryRoles()
+            .map(role -> new RolesListResponse(role.getName()));
+  }
 }
