@@ -1,6 +1,7 @@
 package com.carry.basar.service.impl;
 
 import com.carry.basar.config.JwtUtil;
+import com.carry.basar.constants.RoleConstants;
 import com.carry.basar.model.Role;
 import com.carry.basar.model.User;
 import com.carry.basar.model.UserRol;
@@ -202,13 +203,6 @@ public class UserServiceImpl implements UserService {
       log.error("❌ Error saving a user: {}", e.getMessage());
       return Mono.error(new RuntimeException("Error saving a user: ", e));
     });
-  }
-
-  @Override
-  public Flux<RolesListResponse> listPublicRoles() {
-    return this.roleRepository.findAll()
-            .filter(role -> !role.getName().equals("ADMIN"))
-            .map(role -> new RolesListResponse(role.getName()));
   }
 
   @Override

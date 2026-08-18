@@ -1,5 +1,6 @@
 package com.carry.basar.service.impl;
 
+import com.carry.basar.constants.RoleConstants;
 import com.carry.basar.model.Role;
 import com.carry.basar.model.dto.RoleDto;
 import com.carry.basar.model.dto.role.RolesListResponse;
@@ -84,7 +85,7 @@ public class RoleServiceImpl implements RoleService {
                                         HttpStatus.NOT_FOUND, "Error, role not found")))
                                 .flatMap(role -> {
                                   // comprobamos que el usuario es administrador
-                                  if (role.getName().equals("ADMIN")) {
+                                  if (role.getName().equals(RoleConstants.ADMIN)) {
                                     return this.roleRepository.findByName(roleNameToErase)
                                             .switchIfEmpty(Mono.error(new ResponseStatusException(
                                                     HttpStatus.NOT_FOUND, "Error, role not found")))
@@ -111,5 +112,12 @@ public class RoleServiceImpl implements RoleService {
                       .findAll()
                       .map(role -> new RolesListResponse(role.getName()));
             });
+  }
+
+  @Override
+  public Flux<RolesListResponse> listRolesForSignUp() {
+    return this.roleRepository
+            .findTransporterAndCarryRoles()
+            .map(role -> new RolesListResponse(role.getName()));
   }
 }

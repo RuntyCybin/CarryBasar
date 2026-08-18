@@ -1,6 +1,8 @@
 package com.carry.basar.service.impl;
 
+import com.carry.basar.constants.RoleConstants;
 import com.carry.basar.model.AcceptedOrder;
+import com.carry.basar.model.Order;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderRequest;
 import com.carry.basar.model.dto.accepted_order.AcceptedOrderResponse;
 import com.carry.basar.model.repository.*;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AcceptOrderServiceImpl implements AcceptOrderService {
@@ -38,7 +42,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
               // recogemos los roles del usuario
               return this.userRolRepository.findByUserId(user.getId())
                       .flatMap(userRols -> this.roleRepository.findById(userRols.getRoleId())
-                              .filter(role -> role.getName().equals("TRANSPORTER"))
+                              .filter(role -> role.getName().equals(RoleConstants.TRANSPORTER))
                               .flatMap(rolTransporter -> {
                                 // 2.encontrar el order con el id proporcionado (una vez completada la 1)
                                 return this.orderRepository.findById(request.orderId())
@@ -109,7 +113,7 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
                     // 2. Verificar que el usuario tiene rol TRANSPORTER
                     this.userRolRepository.findByUserId(user.getId())
                             .flatMap(userRols -> this.roleRepository.findById(userRols.getRoleId()))
-                            .filter(role -> "TRANSPORTER".equals(role.getName()))
+                            .filter(role -> RoleConstants.TRANSPORTER.equals(role.getName()))
                             .hasElements()
                             .flatMapMany(rolTransporter -> {
                               if (!rolTransporter) {
@@ -139,8 +143,22 @@ public class AcceptOrderServiceImpl implements AcceptOrderService {
             .flatMap(user -> {
               return acceptedOrdersRepository.findByOrderIdAndUserId(orderId, userId)
                       .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Accepted Order not found")))
-                      .flatMap(acceptedOrder -> acceptedOrdersRepository.deleteByOrderIdAndUserId(orderId, userId)
-                              .thenReturn("SUCCESS"));
+                      // 2. antes de eliminar vamos a comprobar si shippedAt es mayor que la fecha actual
+                      // si la fecha shippedAt es mayor que la fecha actual significa que la orden no fue llevada al final ==
+                      // que la transportista la acepto pero luego cambio de opinion y rechazo el pedido
+                      .flatMap(acceptedOrder -> {
+                        LocalDateTime currentTime = LocalDateTime.now();
+                        /*if (acceptedOrder.getShippedAt() != null && acceptedOrder.getShippedAt().isAfter(currentTime)) {
+                          // eliminamos la orden aceptada
+                          return acceptedOrdersRepository.deleteByOrderIdAndUserId(orderId, userId)
+                                  .thenReturn("Order removed successfully");
+                        } else {
+                          // enviamos email al usuario (CARRY) de que su orden fue cancelada y que deberia de volver a crearla
+                          return Mono.just("Order rejected by user");
+                        } */
+                        return acceptedOrdersRepository.deleteByOrderIdAndUserId(orderId, userId)
+                                .thenReturn("Order removed successfully");
+                      });
             });
   }
 }

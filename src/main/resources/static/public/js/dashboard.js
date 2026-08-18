@@ -1,6 +1,18 @@
 (function () {
   const token = sessionStorage.getItem('token');
 
+  const BTN_PRIMARY = 'border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded transition-colors font-medium';
+  const BTN_SUCCESS = 'border border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-4 py-2 rounded transition-colors font-medium';
+  const BTN_DANGER = 'border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded transition-colors font-medium';
+  const LIST_ITEM = 'flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
+
+  // Escapa texto antes de insertarlo en innerHTML para evitar XSS
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value ?? '';
+    return div.innerHTML;
+  }
+
   // comprobamos si el token existe
   if (!token) {
     window.location.href = '/public/login.html';
@@ -20,14 +32,14 @@
 
       // texto del usuario tipo TRANSPORTER
       const descripcionDashboard = document.getElementById("descDashboard");
-      descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span style='font-weight: 700;'>${username}</span> selecciona algun order para llevar.</p>`;
+      descripcionDashboard.innerHTML = `<p id="descDashboard">Hola <span class="font-semibold">${escapeHtml(username)}</span> selecciona algun order para llevar.</p>`;
 
       // menu de botones superior derecha
       const btnsCerrarCrear = document.getElementById("salirCrearBtns");
       btnsCerrarCrear.innerHTML = `
-            <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
-                <button type="button" id="acceptedOrderstBtn" class="btn btn-outline-primary">Ordenes aceptadas</button>
-                <button type="button" id="logoutBtn" class="btn btn-outline-primary">Salir</button>
+            <div class="flex gap-2" id="salirCrearBtns">
+                <button type="button" id="acceptedOrderstBtn" class="${BTN_PRIMARY}">Ordenes aceptadas</button>
+                <button type="button" id="logoutBtn" class="${BTN_PRIMARY}">Salir</button>
             </div>`;
 
       // mostramos orders que se pueden llevar
@@ -38,7 +50,7 @@
       }).then(async res => {
 
         // Gestión del 500
-        if (res.status == 500) {
+        if (res.status === 500) {
           // Leemos el cuerpo para obtener el mensaje que envía el backend
           const errorBody = await res.json().catch(() => ({}));
           const errorMsg = errorBody.error || "Internal server error";
@@ -64,32 +76,32 @@
           const item = document.createElement("div");
           item.innerHTML = `
             <img src="https://github.com/twbs.png" alt="" width="32" height="32"
-                class="rounded-circle flex-shrink-0">
-            <div class="d-flex gap-2 w-100">
-                <div style="flex: 0 0 30%; min-width: 0;">
-                    <h6 class="mb-0" id="desc">${order.description}</h6>
-                    <p class="mb-0 opacity-75">Identificador pedido: ${order.orderId}</p>
-                    <p class="mb-0 opacity-75" id="volume">Volumen: ${order.volume}</p>
+                class="rounded-full flex-shrink-0">
+            <div class="flex gap-2 w-full">
+                <div class="basis-[30%] min-w-0">
+                    <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
+                    <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
+                    <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                 </div>
-                <div class="d-flex align-items-center justify-content-center" style="flex: 0 0 20%;">
-                  <input type="hidden" id="orderId" value="${order.orderId}">
-                  <button type="button" id="aceptarBtn" onclick='aceptarOrder(${JSON.stringify(order)})' class="btn btn-outline-success">Aceptar</button>
+                <div class="basis-[20%] flex items-center justify-center">
+                  <button type="button" class="aceptarBtn ${BTN_SUCCESS}">Aceptar</button>
                 </div>
-                <div class="d-flex gap-3" style="flex: 0 0 50%;">
-                    <div class="d-flex flex-column align-items-start" style="flex: 1 1 50%;">
-                        <small class="opacity-50 text-nowrap"><p class="mb-0">Creado: </p>${new Date(order.createdAt).toLocaleString()}</small>
-                        <small class="opacity-50 text-nowrap"><p class="mb-0">Fecha límite: </p>${new Date(order.dueDate).toLocaleString()}</small>
+                <div class="basis-[50%] flex gap-3">
+                    <div class="flex flex-col items-start basis-1/2">
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Creado: </span>${new Date(order.createdAt).toLocaleString()}</small>
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Fecha límite: </span>${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
-                    <div class="d-flex flex-column align-items-start" style="flex: 1 1 50%;">
-                        <small class="opacity-50 text-nowrap"><p class="mb-0">Origen: </p>${order.fromLocation}</small>
-                        <small class="opacity-50 text-nowrap"><p class="mb-0">Destino: </p>${order.toLocation}</small>
+                    <div class="flex flex-col items-start basis-1/2">
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Origen: </span>${escapeHtml(order.fromLocation)}</small>
+                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Destino: </span>${escapeHtml(order.toLocation)}</small>
                     </div>
                 </div>
             </div>`;
 
           //item.href = "accept-order.html";
 
-          item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
+          item.className = LIST_ITEM;
+          item.querySelector('.aceptarBtn').addEventListener('click', () => aceptarOrder(order));
 
           listContainer.appendChild(item);
         }
@@ -97,7 +109,7 @@
         console.error(err);
 
         // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-        alert(err.errorMsg.includes("Internal server")
+        alert(err.message.includes("Internal server")
           ? 'No se pudieron obtener tus pedidos: ' + err.message
           : 'Sesión inválida. Inicie sesión nuevamente.');
 
@@ -114,13 +126,13 @@
 
       // texto del usuario tipo CARRY
       const descripcionDashboard = document.getElementById("descDashboard");
-      descripcionDashboard.innerHTML = `<p id="descDashboard">Listado de orders creados por <span>${username}</span>.</p>`;
+      descripcionDashboard.innerHTML = `<p id="descDashboard">Listado de orders creados por <span class="font-semibold">${escapeHtml(username)}</span>.</p>`;
 
       const btnsCerrarCrear = document.getElementById("salirCrearBtns");
       btnsCerrarCrear.innerHTML = `
-            <div class="btn-group btn-group-lg" role="group" aria-label="Large button group" id="salirCrearBtns">
-                <button type="button" id="logoutBtn" class="btn btn-outline-primary">Salir</button>
-                <a href="create-order.html" type="button" class="btn btn-outline-primary">Crear pedido</a>
+            <div class="flex gap-2" id="salirCrearBtns">
+                <button type="button" id="logoutBtn" class="${BTN_PRIMARY}">Salir</button>
+                <a href="create-order.html" class="${BTN_PRIMARY}">Crear pedido</a>
             </div>`;
 
       // mostramos orders que tiene el usuario creados
@@ -132,7 +144,7 @@
         console.log("STATUS: " + res.status);
 
         // Gestión del 500
-        if (res.status == 500) {
+        if (res.status === 500) {
           // Leemos el cuerpo para obtener el mensaje que envía el backend
           const errorBody = await res.json().catch(() => ({}));
           const errorMsg = errorBody.error || "Internal server error";
@@ -146,10 +158,10 @@
           const listContainer = document.getElementById("ordersList");
           listContainer.innerHTML = ""; // Limpiar contenido previo
           const item = document.createElement("span");
-          item.className = "no-items-message";
+          item.className = "block text-center text-gray-500 py-6";
           item.innerHTML = `
             <div>
-                <h6 class="mb-0">NO TIENE ORDENES CREADAS</h6>
+                <h6 class="font-semibold">NO TIENE ORDENES CREADAS</h6>
             </div>`;
 
           listContainer.appendChild(item);
@@ -160,7 +172,7 @@
           throw new Error('No autorizado');
         }
 
-        // Todo correcto
+        // OK
         if (res.status === 200) {
           console.log("Orders obtenidos correctamente");
           res.json().then(data => {
@@ -176,28 +188,30 @@
               item.href = "#";
               item.innerHTML = `
                 <img src="https://github.com/twbs.png" alt="" width="32" height="32"
-                    class="rounded-circle flex-shrink-0">
-                <div class="d-flex gap-2 w-100 justify-content-between">
-                  <div>
-                      <h6 class="mb-0" id="desc">${order.description}</h6>
-                      <p class="mb-0 opacity-75">Identificador pedido: ${order.orderId}</p>
-                      <p class="mb-0 opacity-75">Volumen: ${order.volume}</p>
+                    class="rounded-full flex-shrink-0">
+                <div class="flex flex-wrap items-center gap-4 w-full">
+                  <div class="min-w-0">
+                      <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
+                      <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
+                      <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                   </div>
-                  <input type="hidden" id="orderId" value="${order.orderId}">
-                  <div>
-                    <small class="opacity-50 text-nowrap"><p>Creado: </p>${new Date(order.createdAt).toLocaleString()}</small>
-                    <small class="opacity-50 text-nowrap"><p>Fecha límite: </p>${new Date(order.dueDate).toLocaleString()}</small>
+                  <div class="flex gap-6">
+                    <div>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Creado: ${new Date(order.createdAt).toLocaleString()}</small>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Fecha límite: ${new Date(order.dueDate).toLocaleString()}</small>
+                    </div>
+                    <div>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Desde: ${escapeHtml(order.fromLocation)}</small>
+                      <small class="block text-gray-400 text-xs whitespace-nowrap">Donde: ${escapeHtml(order.toLocation)}</small>
+                    </div>
                   </div>
-                  <div>
-                    <small class="opacity-50 text-nowrap"><p>Desde: </p>${order.fromLocation}</small>
-                    <small class="opacity-50 text-nowrap"><p>Donde: </p>${order.toLocation}</small>
-                  </div>
-                  <div>
-                    <button type="button" id="eliminarBtn" onclick="eliminarOrder('${order.orderId}')" class="btn btn-outline-danger">Eliminar</button>
+                  <div class="ml-auto">
+                    <button type="button" class="eliminarBtn ${BTN_DANGER}">Eliminar</button>
                   </div>
                 </div>`;
 
-              item.className = "list-group-item list-group-item-action d-flex gap-3 py-3";
+              item.className = LIST_ITEM;
+              item.querySelector('.eliminarBtn').addEventListener('click', () => eliminarOrder(order.orderId));
 
               listContainer.appendChild(item);
             }
@@ -211,7 +225,7 @@
         console.error(err);
 
         // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-        alert(err.errorMsg.includes("Internal server")
+        alert(err.message.includes("Internal server")
           ? 'No se pudieron obtener tus pedidos: ' + err.message
           : 'Sesión inválida. Inicie sesión nuevamente.');
 
@@ -224,24 +238,23 @@
     }
   }
 
-
-  // Muestra un alert de Bootstrap con fade in/out durante `duration` ms
-  function showBootstrapAlert(message, duration = 5000) {
+  // Muestra un alert con fade in/out durante `duration` ms
+      function showAlert(message, duration = 5000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-success fade';
+    alertDiv.className = 'bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300';
     alertDiv.setAttribute('role', 'alert');
     alertDiv.textContent = message;
 
     alertContainer.appendChild(alertDiv);
 
-    // se añade "show" en el siguiente frame para que la transicion de fade-in se aplique
-    requestAnimationFrame(() => alertDiv.classList.add('show'));
+    // se quita "opacity-0" en el siguiente frame para que la transicion de fade-in se aplique
+    requestAnimationFrame(() => alertDiv.classList.remove('opacity-0'));
 
     setTimeout(() => {
-      alertDiv.classList.remove('show'); // dispara el fade-out
+      alertDiv.classList.add('opacity-0'); // dispara el fade-out
       alertDiv.addEventListener('transitionend', () => alertDiv.remove(), {once: true});
     }, duration);
   }
@@ -250,7 +263,7 @@
   const pendingAlert = sessionStorage.getItem('pendingAlert');
   if (pendingAlert) {
     sessionStorage.removeItem('pendingAlert');
-    showBootstrapAlert(pendingAlert);
+    showAlert(pendingAlert);
   }
 
   // Funcion para eliminar orders de clientes
@@ -296,8 +309,8 @@
       return;
     }
 
-    if (confirm('¿Estás seguro de aceptar este order?')) {
-      fetch(`/v1/api/acceptOrder/create`, {
+    if (confirm('¿Estás seguro de aceptar esta orden?')) {
+      fetch(`/v1/api/acceptOrder`, {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + token,
@@ -314,7 +327,7 @@
         })
       }).then(async res => {
         if (res.status === 200) {
-          alert('Order aceptado correctamente.');
+          sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
           //window.location.href = '/public/transport-orders.html';
           window.location.reload();
         } else if (res.status === 404) {
