@@ -13,6 +13,41 @@
     return div.innerHTML;
   }
 
+  // Modal de detalle de pedido
+  const orderModal = document.getElementById('orderModal');
+
+  function openOrderModal() {
+    orderModal.classList.remove('hidden');
+    orderModal.classList.add('flex');
+  }
+
+  function closeOrderModal() {
+    orderModal.classList.add('hidden');
+    orderModal.classList.remove('flex');
+  }
+
+  function showOrderModal(order) {
+    document.getElementById('orderModalDescription').textContent = order.description ?? '';
+    document.getElementById('orderModalId').textContent = order.orderId ?? '';
+    document.getElementById('orderModalVolume').textContent = order.volume ?? '';
+    document.getElementById('orderModalFrom').textContent = order.fromLocation ?? '';
+    document.getElementById('orderModalTo').textContent = order.toLocation ?? '';
+    document.getElementById('orderModalCreated').textContent = order.createdAt ? new Date(order.createdAt).toLocaleString() : '';
+    document.getElementById('orderModalDue').textContent = order.dueDate ? new Date(order.dueDate).toLocaleString() : '';
+    openOrderModal();
+  }
+
+  if (orderModal) {
+    document.getElementById('orderModalCloseBtn').addEventListener('click', closeOrderModal);
+    document.getElementById('orderModalCloseBtnBottom').addEventListener('click', closeOrderModal);
+    orderModal.addEventListener('click', (e) => {
+      if (e.target === orderModal) closeOrderModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeOrderModal();
+    });
+  }
+
   // comprobamos si el token existe
   if (!token) {
     window.location.href = '/public/login.html';
@@ -100,8 +135,12 @@
 
           //item.href = "accept-order.html";
 
-          item.className = LIST_ITEM;
-          item.querySelector('.aceptarBtn').addEventListener('click', () => aceptarOrder(order));
+          item.className = LIST_ITEM + ' cursor-pointer';
+          item.addEventListener('click', () => showOrderModal(order));
+          item.querySelector('.aceptarBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            aceptarOrder(order);
+          });
 
           listContainer.appendChild(item);
         }
@@ -211,7 +250,15 @@
                 </div>`;
 
               item.className = LIST_ITEM;
-              item.querySelector('.eliminarBtn').addEventListener('click', () => eliminarOrder(order.orderId));
+              item.addEventListener('click', (e) => {
+                e.preventDefault();
+                showOrderModal(order);
+              });
+              item.querySelector('.eliminarBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                eliminarOrder(order.orderId);
+              });
 
               listContainer.appendChild(item);
             }
