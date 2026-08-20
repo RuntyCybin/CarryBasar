@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
 import com.carry.basar.model.dto.order.RemoveOrderResponse;
+import com.carry.basar.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,13 @@ public class OrderServiceImpl implements OrderService {
 
   private final UserRepository userRepository;
 
-  public OrderServiceImpl(OrderRepository orderRepository, UserRepository userRepository) {
+  private final EmailService emailService;
+
+  public OrderServiceImpl(OrderRepository orderRepository,
+                          UserRepository userRepository, EmailService emailService) {
     this.userRepository = userRepository;
     this.orderRepository = orderRepository;
+    this.emailService = emailService;
   }
 
   @Override
@@ -134,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
             .flatMap(username -> {
               return userRepository.findByName(username)
                       .switchIfEmpty(Mono.error(new RuntimeException("User not found by name")))
-                      .doOnNext(userAux -> System.out.println("User: " + userAux.getEmail()))
+                      .doOnNext(userAux -> log.info("User found: {}", userAux.getEmail()))
                       .flatMap(user -> {
                         return orderRepository.findById(orderId)
                                 .flatMap(orderRepository::delete)
@@ -151,10 +156,33 @@ public class OrderServiceImpl implements OrderService {
                 // Devuelve el username extraído del token
                 return authentication.getName();
               } else {
-                System.out.println("User was not authenticated");
+                log.error("User was not authenticated");
               }
               return null;
             })
             .switchIfEmpty(Mono.error(new RuntimeException("Authentication failed")));
+  }
+
+  @Override
+  public Mono<String> sendSuggestedPrice(Long orderId, Double suggestedPrice) {
+    return getAuthenticatedUsername().flatMap(username -> {
+      return userRepository.findByName(username)
+              .switchIfEmpty(Mono.error(new RuntimeException("User not found by name")))
+              .doOnNext(userAux -> log.info("User found: {}", userAux.getEmail()))
+              .flatMap(user -> {
+                return orderRepository.findById(orderId)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
+                        .flatMap(order -> {
+                          return userRepository.findById(order.getUserId())
+                                  .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+                                  .flatMap(orderOwnerUser ->
+                                          emailService.sendAsync(orderOwnerUser.getEmail(),
+                                                  "Suggested price",
+                                                  "The transporter suggested you this price: " + suggestedPrice)
+                                                  .thenReturn("Email sent to the client with the suggested price: " + suggestedPrice));
+                        });
+
+              });
+    });
   }
 }

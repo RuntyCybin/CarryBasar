@@ -90,6 +90,92 @@
     });
   }
 
+  // Modal de confirmación de precio (aceptar order como TRANSPORTER)
+  const priceConfirmModal = document.getElementById('priceConfirmModal');
+  const priceConfirmStep = document.getElementById('priceConfirmStep');
+  const priceInputStep = document.getElementById('priceInputStep');
+  let priceConfirmOrder = null;
+
+  function openPriceConfirmModal() {
+    priceConfirmModal.classList.remove('hidden');
+    priceConfirmModal.classList.add('flex');
+  }
+
+  function closePriceConfirmModal() {
+    priceConfirmModal.classList.add('hidden');
+    priceConfirmModal.classList.remove('flex');
+    priceConfirmStep.classList.remove('hidden');
+    priceInputStep.classList.add('hidden');
+    document.getElementById('priceInputField').value = '';
+    priceConfirmOrder = null;
+  }
+
+  function showPriceConfirmModal(order) {
+    priceConfirmOrder = order;
+    document.getElementById('priceConfirmAmount').textContent = order.price != null
+      ? order.price.toLocaleString('es-ES', {style: 'currency', currency: 'EUR'})
+      : 'sin especificar';
+    priceConfirmStep.classList.remove('hidden');
+    priceInputStep.classList.add('hidden');
+    openPriceConfirmModal();
+  }
+
+  if (priceConfirmModal) {
+    document.getElementById('priceConfirmYesBtn').addEventListener('click', () => {
+      const order = priceConfirmOrder;
+      closePriceConfirmModal();
+      if (order) aceptarOrder(order);
+    });
+
+    document.getElementById('priceConfirmNoBtn').addEventListener('click', () => {
+      priceConfirmStep.classList.add('hidden');
+      priceInputStep.classList.remove('hidden');
+      document.getElementById('priceInputField').focus();
+    });
+
+    document.getElementById('priceInputCancelBtn').addEventListener('click', closePriceConfirmModal);
+
+    document.getElementById('priceInputSubmitBtn').addEventListener('click', () => {
+      const order = priceConfirmOrder;
+      const newPrice = parseFloat(document.getElementById('priceInputField').value);
+
+      if (!order || Number.isNaN(newPrice) || newPrice < 0) {
+        alert('Introduce un precio válido.');
+        return;
+      }
+
+      const token = sessionStorage.getItem('token');
+      fetch(`/v1/api/order/suggestedPrice?orderId=${order.orderId}&price=${newPrice}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      }).then(async res => {
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => ({}));
+          const errorMsg = errorBody.error || 'Error al enviar el precio propuesto';
+          throw new Error(errorMsg);
+        }
+        return res.text();
+      }).then(msg => {
+        console.log('Precio propuesto enviado:', msg);
+        showAlert('Precio propuesto enviado correctamente.');
+      }).catch(err => {
+        console.error(err);
+        alert('Error: ' + err.message);
+      });
+
+      closePriceConfirmModal();
+    });
+
+    priceConfirmModal.addEventListener('click', (e) => {
+      if (e.target === priceConfirmModal) closePriceConfirmModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !priceConfirmModal.classList.contains('hidden')) closePriceConfirmModal();
+    });
+  }
+
   // comprobamos si el token existe
   if (!token) {
     window.location.href = '/public/login.html';
@@ -179,7 +265,7 @@
           item.addEventListener('click', () => showOrderModal(order));
           item.querySelector('.aceptarBtn').addEventListener('click', (e) => {
             e.stopPropagation();
-            aceptarOrder(order);
+            showPriceConfirmModal(order);
           });
 
           listContainer.appendChild(item);
@@ -395,40 +481,36 @@
       return;
     }
 
-    const confirmed = await showConfirmModal('¿Estás seguro de aceptar esta orden?');
-    if (confirmed) {
-      fetch(`/v1/api/acceptOrder`, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        // TODO: cambiar fecha por las recogidas de los date time pickers
-        body: JSON.stringify({
-          orderId: orderId,
-          userId: userId,
-          shipAt: new Date().toISOString(),
-          shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          description: description,
-          volumen: volume
-        })
-      }).then(async res => {
-        if (res.status === 200) {
-          sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
-          //window.location.href = '/public/transport-orders.html';
-          window.location.reload();
-        } else if (res.status === 404) {
-          throw new Error('Order no encontrado');
-        } else {
-          const errorBody = await res.json().catch(() => ({}));
-          const errorMsg = errorBody.error || 'Error al aceptar el order';
-          throw new Error(errorMsg);
-        }
-      }).catch(err => {
-        console.error(err);
-        alert('Error: ' + err.message);
-      });
-    }
+    fetch(`/v1/api/acceptOrder`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        orderId: orderId,
+        userId: userId,
+        shipAt: new Date().toISOString(),
+        shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        description: description,
+        volumen: volume
+      })
+    }).then(async res => {
+      if (res.status === 200) {
+        sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
+        //window.location.href = '/public/transport-orders.html';
+        window.location.reload();
+      } else if (res.status === 404) {
+        throw new Error('Order no encontrado');
+      } else {
+        const errorBody = await res.json().catch(() => ({}));
+        const errorMsg = errorBody.error || 'Error al aceptar el order';
+        throw new Error(errorMsg);
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Error: ' + err.message);
+    });
   }
 
   const acceptedOrderstBtn = document.getElementById('acceptedOrderstBtn');

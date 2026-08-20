@@ -2,6 +2,8 @@ package com.carry.basar.controller;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
 import com.carry.basar.model.dto.order.RemoveOrderResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import com.carry.basar.model.Order;
@@ -14,6 +16,8 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1/api/order")
 public class OrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     private final OrderService orderService;
 
@@ -59,6 +63,6 @@ public class OrderController {
      */
     @PostMapping("/suggestedPrice")
     public Mono<String> suggestedPrice(@RequestParam Long orderId, @RequestParam Double price) {
-        return Mono.just("Order ID: " + orderId + " Price: " + price);
+        return orderService.sendSuggestedPrice(orderId, price);
     }
 }

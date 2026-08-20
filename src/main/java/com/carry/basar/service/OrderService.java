@@ -19,4 +19,6 @@ public interface OrderService {
     Mono<GetOrderResponse> getOrderById(Long orderId);
 
     Mono<RemoveOrderResponse> removeOrderById(Long orderId);
+
+    Mono<String> sendSuggestedPrice(Long orderId, Double suggestedPrice);
 }
