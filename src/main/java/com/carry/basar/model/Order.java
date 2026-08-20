@@ -29,6 +29,11 @@ public class Order {
     @Column("to_location")
     private String toLocation;
 
+    @Column("precio")
+    Double price;
+
+
+
     // constructors
     public Order() {
     }
@@ -96,5 +101,13 @@ public class Order {
 
     public void setToLocation(String toLocation) {
         this.toLocation = toLocation;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 }

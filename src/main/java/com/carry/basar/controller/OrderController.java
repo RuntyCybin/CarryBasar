@@ -31,11 +31,6 @@ public class OrderController {
         return orderService.createOrder(orderDto);
     }
 
-    @GetMapping("/userid/{userId}")
-    public Flux<OrderDto> getUserOrders(@PathVariable Long userId) {
-        return orderService.getOrdersByUserId(userId);
-    }
-
     @GetMapping("/my-orders")
     public Flux<OrderDto> getMyOrders() {
         return orderService.getMyOrders();
@@ -54,5 +49,16 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public Mono<RemoveOrderResponse> removeOrderById(@PathVariable Long orderId) {
         return orderService.removeOrderById(orderId);
+    }
+
+    /**
+     * Endpoint to email a CLIENT user with a suggested price
+     * instead of the order price
+     * @param orderId : ID of the order to be rejected
+     * @return a message with an order ID and with a suggested price
+     */
+    @PostMapping("/suggestedPrice")
+    public Mono<String> suggestedPrice(@RequestParam Long orderId, @RequestParam Double price) {
+        return Mono.just("Order ID: " + orderId + " Price: " + price);
     }
 }

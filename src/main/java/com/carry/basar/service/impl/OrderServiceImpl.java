@@ -36,26 +36,6 @@ public class OrderServiceImpl implements OrderService {
   }
 
   @Override
-  public Flux<OrderDto> getOrdersByUserId(Long userId) {
-    return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
-            .flatMapMany(user -> {
-              log.info("User email: {}", user.getEmail());
-              return orderRepository.findByUserId(userId)
-                      .switchIfEmpty(Flux.error(
-                              new ResponseStatusException(
-                                      HttpStatus.NOT_FOUND,
-                                      "No orders found for user")))
-                      .map(order -> {
-                        log.info("Order ID: {}", order.getId());
-                        return new OrderDto(order.getDescription(),
-                                order.getVol());
-                      });
-            });
-  }
-
-  @Override
   public Mono<OrderDto> createOrder(OrderDto orderDto) {
     return getAuthenticatedUsername()
             .flatMap(username -> {
@@ -74,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
                         order.setUserId(user.getId());
                         order.setFromLocation(orderDto.fromLocation());
                         order.setToLocation(orderDto.toLocation());
+                        order.setPrice(orderDto.price());
                         return orderRepository.save(order)
                                 .flatMap(savedOrder -> {
                                   return Mono.just(new OrderDto(
@@ -83,7 +64,8 @@ public class OrderServiceImpl implements OrderService {
                                           savedOrder.getOrderDate(),
                                           savedOrder.getDueDate(),
                                           savedOrder.getToLocation(),
-                                          savedOrder.getFromLocation()));
+                                          savedOrder.getFromLocation(),
+                                          savedOrder.getPrice()));
                                 });
                       });
             });
@@ -106,7 +88,8 @@ public class OrderServiceImpl implements OrderService {
                                       order.getOrderDate(),
                                       order.getDueDate(),
                                       order.getToLocation(),
-                                      order.getFromLocation()));
+                                      order.getFromLocation(),
+                                      order.getPrice()));
                     }));
   }
 
@@ -123,8 +106,8 @@ public class OrderServiceImpl implements OrderService {
                     order.getOrderDate(),
                     order.getDueDate(),
                     order.getToLocation(),
-                    order.getFromLocation()
-            ));
+                    order.getFromLocation(),
+                    order.getPrice()));
   }
 
   @Override

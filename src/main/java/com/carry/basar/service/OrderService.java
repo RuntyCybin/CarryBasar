@@ -10,8 +10,6 @@ import reactor.core.publisher.Mono;
 
 public interface OrderService {
 
-    Flux<OrderDto> getOrdersByUserId(Long userId);
-
     Mono<OrderDto> createOrder(OrderDto orderDto);
 
     Flux<OrderDto> getMyOrders();
