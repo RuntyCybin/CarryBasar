@@ -2,6 +2,8 @@ package com.carry.basar.controller;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
 import com.carry.basar.model.dto.order.RemoveOrderResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import com.carry.basar.model.Order;
@@ -14,6 +16,8 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1/api/order")
 public class OrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     private final OrderService orderService;
 
@@ -29,11 +33,6 @@ public class OrderController {
     @PostMapping
     public Mono<OrderDto> createOrder(@RequestBody OrderDto orderDto) {
         return orderService.createOrder(orderDto);
-    }
-
-    @GetMapping("/userid/{userId}")
-    public Flux<OrderDto> getUserOrders(@PathVariable Long userId) {
-        return orderService.getOrdersByUserId(userId);
     }
 
     @GetMapping("/my-orders")
@@ -54,5 +53,16 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public Mono<RemoveOrderResponse> removeOrderById(@PathVariable Long orderId) {
         return orderService.removeOrderById(orderId);
+    }
+
+    /**
+     * Endpoint to email a CLIENT user with a suggested price
+     * instead of the order price
+     * @param orderId : ID of the order to be rejected
+     * @return a message with an order ID and with a suggested price
+     */
+    @PostMapping("/suggestedPrice")
+    public Mono<String> suggestedPrice(@RequestParam Long orderId, @RequestParam Double price) {
+        return orderService.sendSuggestedPrice(orderId, price);
     }
 }

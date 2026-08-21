@@ -11,7 +11,7 @@
 
     try {
       if (password !== passwordRepeat) {
-        alert('Las contraseñas no coinciden');
+        showAlert('Las contraseñas no coinciden', 'error');
         errorDiv.textContent = 'Las contraseñas no coinciden';
         throw new Error('Las contraseñas no coinciden');
       }
@@ -43,10 +43,12 @@
         }
       }).catch(err => {
         console.error(err);
-        alert('No se pudo cambiar la contraseña: ' + err.message);
+        showAlert('No se pudo cambiar la contraseña: ' + err.message, 'error');
 
         sessionStorage.clear();
-        window.location.href = '/public/login.html';
+        setTimeout(() => {
+          window.location.href = '/public/login.html';
+        }, 500);
       });
 
       // Redirigir al dashboard
@@ -58,12 +60,16 @@
   });
 
   // Muestra un alert con fade in/out durante `duration` ms
-  function showAlert(message, duration = 7000) {
+  function showAlert(message, type = 'success', duration = 7000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
+    const styles = type === 'error'
+      ? 'bg-red-50 border border-red-400 text-red-800'
+      : 'bg-green-50 border border-green-400 text-green-800';
+
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300';
+    alertDiv.className = `${styles} px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300`;
     alertDiv.setAttribute('role', 'alert');
     alertDiv.textContent = message;
 

@@ -1,76 +1,105 @@
 (function () {
 
-    // ............................................................................
-    // metadatos de presentación para el listbox de roles (insignia + texto de apoyo)
-    const ROLE_META = {
-        USER: {initial: 'U', color: 'bg-gray-500', description: 'Cuenta base para comprar productos y solicitar encargos.'},
-        CARRY: {initial: 'C', color: 'bg-blue-600', description: 'Crea encargos para que un transportista los traiga.'},
-        TRANSPORTER: {initial: 'T', color: 'bg-emerald-600', description: 'Acepta y entrega los encargos de otros usuarios.'}
-    };
-
-    function roleMeta(roleName) {
-        return ROLE_META[roleName] || {initial: roleName.charAt(0).toUpperCase(), color: 'bg-indigo-500', description: ''};
+  // ............................................................................
+  // metadatos de presentación para el listbox de roles (insignia + texto de apoyo)
+  const ROLE_META = {
+    USER: {initial: 'U', color: 'bg-gray-500', description: 'Cuenta base para comprar productos y solicitar encargos.'},
+    CARRY: {initial: 'C', color: 'bg-blue-600', description: 'Crea encargos para que un transportista los traiga.'},
+    TRANSPORTER: {
+      initial: 'T',
+      color: 'bg-emerald-600',
+      description: 'Acepta y entrega los encargos de otros usuarios.'
     }
+  };
+
+  function roleMeta(roleName) {
+    return ROLE_META[roleName] || {initial: roleName.charAt(0).toUpperCase(), color: 'bg-indigo-500', description: ''};
+  }
+
+  // ............................................................................
+
+  // Muestra un alert con fade in/out durante `duration` ms
+  function showAlert(message, type = 'success', duration = 5000) {
+    const alertContainer = document.getElementById('alertContainer');
+    if (!alertContainer) return;
+
+    const styles = type === 'error'
+      ? 'bg-red-50 border border-red-400 text-red-800'
+      : 'bg-green-50 border border-green-400 text-green-800';
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `${styles} px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.textContent = message;
+
+    alertContainer.appendChild(alertDiv);
+
+    requestAnimationFrame(() => alertDiv.classList.remove('opacity-0'));
+
+    setTimeout(() => {
+      alertDiv.classList.add('opacity-0');
+      alertDiv.addEventListener('transitionend', () => alertDiv.remove(), {once: true});
+    }, duration);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+
     // ............................................................................
+    // recogemos los roles del endpoint publico y montamos el listbox personalizado
+    const rolesList = document.getElementById("rolesList");
+    const rolesButton = document.getElementById("rolesButton");
+    const rolesButtonText = document.getElementById("rolesButtonText");
+    const rolesOptions = document.getElementById("rolesOptions");
+    rolesList.innerHTML = ""; // Limpiar contenido previo
+    rolesOptions.innerHTML = "";
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function updateRolesButtonText() {
+      const selected = Array.from(rolesList.selectedOptions).map(opt => opt.value);
+      rolesButtonText.textContent = selected.length ? selected.join(', ') : 'Selecciona el rol';
+      rolesButtonText.classList.toggle('text-gray-500', selected.length === 0);
+      rolesButtonText.classList.toggle('text-gray-900', selected.length > 0);
+    }
 
-        // ............................................................................
-        // recogemos los roles del endpoint publico y montamos el listbox personalizado
-        const rolesList = document.getElementById("rolesList");
-        const rolesButton = document.getElementById("rolesButton");
-        const rolesButtonText = document.getElementById("rolesButtonText");
-        const rolesOptions = document.getElementById("rolesOptions");
-        rolesList.innerHTML = ""; // Limpiar contenido previo
-        rolesOptions.innerHTML = "";
+    function toggleRolesPanel(show) {
+      const expand = show === undefined ? rolesOptions.classList.contains('hidden') : show;
+      rolesOptions.classList.toggle('hidden', !expand);
+      rolesButton.setAttribute('aria-expanded', String(expand));
+    }
 
-        function updateRolesButtonText() {
-            const selected = Array.from(rolesList.selectedOptions).map(opt => opt.value);
-            rolesButtonText.textContent = selected.length ? selected.join(', ') : 'Selecciona el rol';
-            rolesButtonText.classList.toggle('text-gray-500', selected.length === 0);
-            rolesButtonText.classList.toggle('text-gray-900', selected.length > 0);
-        }
+    rolesButton.addEventListener('click', () => toggleRolesPanel());
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#rolesButton') && !e.target.closest('#rolesOptions')) {
+        toggleRolesPanel(false);
+      }
+    });
 
-        function toggleRolesPanel(show) {
-            const expand = show === undefined ? rolesOptions.classList.contains('hidden') : show;
-            rolesOptions.classList.toggle('hidden', !expand);
-            rolesButton.setAttribute('aria-expanded', String(expand));
-        }
+    fetch('/public/usr/listRolesForSignUpForm').then(async res => {
+      // Gestión del 401/403 (no autorizado)
+      if (!res.ok) throw new Error('No autorizado');
 
-        rolesButton.addEventListener('click', () => toggleRolesPanel());
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('#rolesButton') && !e.target.closest('#rolesOptions')) {
-                toggleRolesPanel(false);
-            }
-        });
+      // Todo correcto → devolvemos JSON
+      return res.json();
+    }).then(data => {
+      console.log("RESPONSE JSON STRINGFY: " + JSON.stringify(data, null, 2));
 
-        fetch('/public/usr/listRolesForSignUpForm').then(async res => {
-            // Gestión del 401/403 (no autorizado)
-            if (!res.ok) throw new Error('No autorizado');
+      // iteramos el data
+      const allRoles = generateAllRoles(data);
 
-            // Todo correcto → devolvemos JSON
-            return res.json();
-        }).then(data => {
-            console.log("RESPONSE JSON STRINGFY: " + JSON.stringify(data, null, 2));
+      console.log("ALL ROLES: " + allRoles);
 
-            // iteramos el data
-            const allRoles = generateAllRoles(data);
+      allRoles.forEach(role => {
+        const option = document.createElement('option');
+        option.value = role;
+        option.textContent = role;
+        rolesList.appendChild(option);
 
-            console.log("ALL ROLES: " + allRoles);
-
-            allRoles.forEach(role => {
-                const option = document.createElement('option');
-                option.value = role;
-                option.textContent = role;
-                rolesList.appendChild(option);
-
-                const meta = roleMeta(role);
-                const item = document.createElement('li');
-                item.setAttribute('role', 'option');
-                item.setAttribute('aria-selected', 'false');
-                item.dataset.value = role;
-                item.className = 'roleOption group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-blue-600 hover:text-white';
-                item.innerHTML = `
+        const meta = roleMeta(role);
+        const item = document.createElement('li');
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', 'false');
+        item.dataset.value = role;
+        item.className = 'roleOption group relative cursor-pointer select-none py-2 pl-3 pr-9 text-gray-900 hover:bg-blue-600 hover:text-white';
+        item.innerHTML = `
                     <div class="flex items-center">
                         <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${meta.color} text-xs font-semibold text-white">${meta.initial}</span>
                         <span class="ml-3 block">
@@ -84,93 +113,96 @@
                         </svg>
                     </span>`;
 
-                item.addEventListener('click', () => {
-                    option.selected = !option.selected;
-                    item.setAttribute('aria-selected', String(option.selected));
-                    item.querySelector('.roleCheck').classList.toggle('hidden', !option.selected);
-                    updateRolesButtonText();
-                });
-
-                rolesOptions.appendChild(item);
-            });
-
-            updateRolesButtonText();
-        });
-        // ............................................................................
-
-
-        // ............................................................................
-        // SUBMIT - Evento para el registro de usuario
-        const form = document.getElementById('signUpForm');
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const username = document.getElementById('userName').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const confirmPassword = document.getElementById('userPassword2').value;
-            if (!username || !email || !password || !confirmPassword) {
-                alert("Por favor, completa todos los campos.");
-                return;
-            }
-            if (password != confirmPassword) {
-                alert("Las contraseñas no coinciden.");
-                return;
-            }
-            const formData = {
-                username: username,
-                email: email,
-                password: password,
-                roles: Array.from(rolesList.selectedOptions).map(opt => opt.value)
-            };
-
-            if (password !== confirmPassword) {
-                alert("Las contraseñas no coinciden.");
-                return;
-            }
-
-            try {
-                console.log("Form Data:", formData);
-                const response = await fetch('/public/usr/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error al registrar el usuario');
-                }
-
-                alert("Usuario registrado con exito!");
-                window.location.href = '/public/login.html';
-            } catch (error) {
-                console.error("Error en el registro:", error);
-                alert("Error al registrar el usuario: " + error.message);
-            }
+        item.addEventListener('click', () => {
+          option.selected = !option.selected;
+          item.setAttribute('aria-selected', String(option.selected));
+          item.querySelector('.roleCheck').classList.toggle('hidden', !option.selected);
+          updateRolesButtonText();
         });
 
+        rolesOptions.appendChild(item);
+      });
+
+      updateRolesButtonText();
     });
     // ............................................................................
 
 
     // ............................................................................
-    // LOGOUT
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        sessionStorage.clear();
-        window.location.href = '/public/login.html';
-    });
-    // ............................................................................
+    // SUBMIT - Evento para el registro de usuario
+    const form = document.getElementById('signUpForm');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
 
+      const username = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      const password = document.getElementById('userPassword').value;
+      const confirmPassword = document.getElementById('userPassword2').value;
+      if (!username || !email || !password || !confirmPassword) {
+        showAlert("Por favor, completa todos los campos.", 'error');
+        return;
+      }
+      if (password !== confirmPassword) {
+        showAlert("Las contraseñas no coinciden.", 'error');
+        return;
+      }
+      const formData = {
+        username: username,
+        email: email,
+        password: password,
+        roles: Array.from(rolesList.selectedOptions).map(opt => opt.value)
+      };
 
-    function generateAllRoles(data) {
-        var aux = [];
-        for (let i = 0; i < data.length; i++) {
-            const role = data[i];
-            aux.push(role.name);
+      if (password !== confirmPassword) {
+        showAlert("Las contraseñas no coinciden.", 'error');
+        return;
+      }
+
+      try {
+        console.log("Form Data:", formData);
+        const response = await fetch('/public/usr/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al registrar el usuario');
         }
-        return aux;
+
+        showAlert("Usuario registrado con exito!");
+        setTimeout(() => {
+          window.location.href = '/public/login.html';
+        }, 500);
+      } catch (error) {
+        console.error("Error en el registro:", error);
+        showAlert("Error al registrar el usuario: " + error.message, 'error');
+      }
+    });
+
+  });
+  // ............................................................................
+
+
+  // ............................................................................
+  // LOGOUT
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.clear();
+    window.location.href = '/public/login.html';
+  });
+
+  // ............................................................................
+
+
+  function generateAllRoles(data) {
+    var aux = [];
+    for (let i = 0; i < data.length; i++) {
+      const role = data[i];
+      aux.push(role.name);
     }
+    return aux;
+  }
 
 })();
