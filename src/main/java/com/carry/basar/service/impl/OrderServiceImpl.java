@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.carry.basar.model.dto.order.GetOrderResponse;
 import com.carry.basar.model.dto.order.RemoveOrderResponse;
+import com.carry.basar.service.EmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,29 +31,13 @@ public class OrderServiceImpl implements OrderService {
 
   private final UserRepository userRepository;
 
-  public OrderServiceImpl(OrderRepository orderRepository, UserRepository userRepository) {
+  private final EmailService emailService;
+
+  public OrderServiceImpl(OrderRepository orderRepository,
+                          UserRepository userRepository, EmailService emailService) {
     this.userRepository = userRepository;
     this.orderRepository = orderRepository;
-  }
-
-  @Override
-  public Flux<OrderDto> getOrdersByUserId(Long userId) {
-    return userRepository.findById(userId)
-            .switchIfEmpty(Mono.error(
-                    new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
-            .flatMapMany(user -> {
-              log.info("User email: {}", user.getEmail());
-              return orderRepository.findByUserId(userId)
-                      .switchIfEmpty(Flux.error(
-                              new ResponseStatusException(
-                                      HttpStatus.NOT_FOUND,
-                                      "No orders found for user")))
-                      .map(order -> {
-                        log.info("Order ID: {}", order.getId());
-                        return new OrderDto(order.getDescription(),
-                                order.getVol());
-                      });
-            });
+    this.emailService = emailService;
   }
 
   @Override
@@ -74,6 +59,7 @@ public class OrderServiceImpl implements OrderService {
                         order.setUserId(user.getId());
                         order.setFromLocation(orderDto.fromLocation());
                         order.setToLocation(orderDto.toLocation());
+                        order.setPrice(orderDto.price());
                         return orderRepository.save(order)
                                 .flatMap(savedOrder -> {
                                   return Mono.just(new OrderDto(
@@ -83,7 +69,8 @@ public class OrderServiceImpl implements OrderService {
                                           savedOrder.getOrderDate(),
                                           savedOrder.getDueDate(),
                                           savedOrder.getToLocation(),
-                                          savedOrder.getFromLocation()));
+                                          savedOrder.getFromLocation(),
+                                          savedOrder.getPrice()));
                                 });
                       });
             });
@@ -106,7 +93,8 @@ public class OrderServiceImpl implements OrderService {
                                       order.getOrderDate(),
                                       order.getDueDate(),
                                       order.getToLocation(),
-                                      order.getFromLocation()));
+                                      order.getFromLocation(),
+                                      order.getPrice()));
                     }));
   }
 
@@ -123,8 +111,8 @@ public class OrderServiceImpl implements OrderService {
                     order.getOrderDate(),
                     order.getDueDate(),
                     order.getToLocation(),
-                    order.getFromLocation()
-            ));
+                    order.getFromLocation(),
+                    order.getPrice()));
   }
 
   @Override
@@ -151,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
             .flatMap(username -> {
               return userRepository.findByName(username)
                       .switchIfEmpty(Mono.error(new RuntimeException("User not found by name")))
-                      .doOnNext(userAux -> System.out.println("User: " + userAux.getEmail()))
+                      .doOnNext(userAux -> log.info("User found: {}", userAux.getEmail()))
                       .flatMap(user -> {
                         return orderRepository.findById(orderId)
                                 .flatMap(orderRepository::delete)
@@ -168,10 +156,33 @@ public class OrderServiceImpl implements OrderService {
                 // Devuelve el username extraído del token
                 return authentication.getName();
               } else {
-                System.out.println("User was not authenticated");
+                log.error("User was not authenticated");
               }
               return null;
             })
             .switchIfEmpty(Mono.error(new RuntimeException("Authentication failed")));
+  }
+
+  @Override
+  public Mono<String> sendSuggestedPrice(Long orderId, Double suggestedPrice) {
+    return getAuthenticatedUsername().flatMap(username -> {
+      return userRepository.findByName(username)
+              .switchIfEmpty(Mono.error(new RuntimeException("User not found by name")))
+              .doOnNext(userAux -> log.info("User found: {}", userAux.getEmail()))
+              .flatMap(user -> {
+                return orderRepository.findById(orderId)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")))
+                        .flatMap(order -> {
+                          return userRepository.findById(order.getUserId())
+                                  .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+                                  .flatMap(orderOwnerUser ->
+                                          emailService.sendAsync(orderOwnerUser.getEmail(),
+                                                  "Suggested price",
+                                                  "The transporter suggested you this price: " + suggestedPrice)
+                                                  .thenReturn("Email sent to the client with the suggested price: " + suggestedPrice));
+                        });
+
+              });
+    });
   }
 }

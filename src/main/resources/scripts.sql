@@ -35,6 +35,7 @@ CREATE TABLE transportsschema.orders (
     userid SERIAL not null,
     from_location VARCHAR(150),
     to_location VARCHAR(150),
+    precio NUMERIC(10,2),                               -- precio del pedido
     constraint fk_user foreign key (userid) references transportsschema.users(id) on delete cascade
 );
 

@@ -30,6 +30,9 @@
     document.getElementById('orderModalDescription').textContent = order.description ?? '';
     document.getElementById('orderModalId').textContent = order.orderId ?? '';
     document.getElementById('orderModalVolume').textContent = order.volume ?? '';
+    document.getElementById('orderModalPrice').textContent = order.price != null
+      ? order.price.toLocaleString('es-ES', {style: 'currency', currency: 'EUR'})
+      : 'Sin especificar';
     document.getElementById('orderModalFrom').textContent = order.fromLocation ?? '';
     document.getElementById('orderModalTo').textContent = order.toLocation ?? '';
     document.getElementById('orderModalCreated').textContent = order.createdAt ? new Date(order.createdAt).toLocaleString() : '';
@@ -45,6 +48,131 @@
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeOrderModal();
+    });
+  }
+
+  // Modal de confirmación (sustituye a confirm())
+  const confirmModal = document.getElementById('confirmModal');
+
+  function showConfirmModal(message) {
+    return new Promise((resolve) => {
+      if (!confirmModal) {
+        resolve(window.confirm(message));
+        return;
+      }
+
+      document.getElementById('confirmModalMessage').textContent = message;
+      confirmModal.classList.remove('hidden');
+      confirmModal.classList.add('flex');
+
+      const yesBtn = document.getElementById('confirmModalYesBtn');
+      const noBtn = document.getElementById('confirmModalNoBtn');
+
+      function cleanup(result) {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+        yesBtn.removeEventListener('click', onYes);
+        noBtn.removeEventListener('click', onNo);
+        confirmModal.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onKeydown);
+        resolve(result);
+      }
+
+      function onYes() { cleanup(true); }
+      function onNo() { cleanup(false); }
+      function onBackdrop(e) { if (e.target === confirmModal) cleanup(false); }
+      function onKeydown(e) { if (e.key === 'Escape') cleanup(false); }
+
+      yesBtn.addEventListener('click', onYes);
+      noBtn.addEventListener('click', onNo);
+      confirmModal.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onKeydown);
+    });
+  }
+
+  // Modal de confirmación de precio (aceptar order como TRANSPORTER)
+  const priceConfirmModal = document.getElementById('priceConfirmModal');
+  const priceConfirmStep = document.getElementById('priceConfirmStep');
+  const priceInputStep = document.getElementById('priceInputStep');
+  let priceConfirmOrder = null;
+
+  function openPriceConfirmModal() {
+    priceConfirmModal.classList.remove('hidden');
+    priceConfirmModal.classList.add('flex');
+  }
+
+  function closePriceConfirmModal() {
+    priceConfirmModal.classList.add('hidden');
+    priceConfirmModal.classList.remove('flex');
+    priceConfirmStep.classList.remove('hidden');
+    priceInputStep.classList.add('hidden');
+    document.getElementById('priceInputField').value = '';
+    priceConfirmOrder = null;
+  }
+
+  function showPriceConfirmModal(order) {
+    priceConfirmOrder = order;
+    document.getElementById('priceConfirmAmount').textContent = order.price != null
+      ? order.price.toLocaleString('es-ES', {style: 'currency', currency: 'EUR'})
+      : 'sin especificar';
+    priceConfirmStep.classList.remove('hidden');
+    priceInputStep.classList.add('hidden');
+    openPriceConfirmModal();
+  }
+
+  if (priceConfirmModal) {
+    document.getElementById('priceConfirmYesBtn').addEventListener('click', () => {
+      const order = priceConfirmOrder;
+      closePriceConfirmModal();
+      if (order) aceptarOrder(order);
+    });
+
+    document.getElementById('priceConfirmNoBtn').addEventListener('click', () => {
+      priceConfirmStep.classList.add('hidden');
+      priceInputStep.classList.remove('hidden');
+      document.getElementById('priceInputField').focus();
+    });
+
+    document.getElementById('priceInputCancelBtn').addEventListener('click', closePriceConfirmModal);
+
+    document.getElementById('priceInputSubmitBtn').addEventListener('click', () => {
+      const order = priceConfirmOrder;
+      const newPrice = parseFloat(document.getElementById('priceInputField').value);
+
+      if (!order || Number.isNaN(newPrice) || newPrice < 0) {
+        alert('Introduce un precio válido.');
+        return;
+      }
+
+      const token = sessionStorage.getItem('token');
+      fetch(`/v1/api/order/suggestedPrice?orderId=${order.orderId}&price=${newPrice}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      }).then(async res => {
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => ({}));
+          const errorMsg = errorBody.error || 'Error al enviar el precio propuesto';
+          throw new Error(errorMsg);
+        }
+        return res.text();
+      }).then(msg => {
+        console.log('Precio propuesto enviado:', msg);
+        showAlert('Precio propuesto enviado correctamente.');
+      }).catch(err => {
+        console.error(err);
+        alert('Error: ' + err.message);
+      });
+
+      closePriceConfirmModal();
+    });
+
+    priceConfirmModal.addEventListener('click', (e) => {
+      if (e.target === priceConfirmModal) closePriceConfirmModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !priceConfirmModal.classList.contains('hidden')) closePriceConfirmModal();
     });
   }
 
@@ -115,7 +243,6 @@
             <div class="flex gap-2 w-full">
                 <div class="basis-[30%] min-w-0">
                     <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
-                    <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
                     <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                 </div>
                 <div class="basis-[20%] flex items-center justify-center">
@@ -123,7 +250,6 @@
                 </div>
                 <div class="basis-[50%] flex gap-3">
                     <div class="flex flex-col items-start basis-1/2">
-                        <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Creado: </span>${new Date(order.createdAt).toLocaleString()}</small>
                         <small class="text-gray-400 text-xs whitespace-nowrap"><span class="block">Fecha límite: </span>${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
                     <div class="flex flex-col items-start basis-1/2">
@@ -139,7 +265,7 @@
           item.addEventListener('click', () => showOrderModal(order));
           item.querySelector('.aceptarBtn').addEventListener('click', (e) => {
             e.stopPropagation();
-            aceptarOrder(order);
+            showPriceConfirmModal(order);
           });
 
           listContainer.appendChild(item);
@@ -231,12 +357,10 @@
                 <div class="flex flex-wrap items-center gap-4 w-full">
                   <div class="min-w-0">
                       <h6 class="font-semibold text-sm">${escapeHtml(order.description)}</h6>
-                      <p class="text-gray-500 text-sm">Identificador pedido: ${escapeHtml(order.orderId)}</p>
                       <p class="text-gray-500 text-sm">Volumen: ${escapeHtml(order.volume)}</p>
                   </div>
                   <div class="flex gap-6">
                     <div>
-                      <small class="block text-gray-400 text-xs whitespace-nowrap">Creado: ${new Date(order.createdAt).toLocaleString()}</small>
                       <small class="block text-gray-400 text-xs whitespace-nowrap">Fecha límite: ${new Date(order.dueDate).toLocaleString()}</small>
                     </div>
                     <div>
@@ -286,7 +410,7 @@
   }
 
   // Muestra un alert con fade in/out durante `duration` ms
-      function showAlert(message, duration = 5000) {
+  function showAlert(message, duration = 5000) {
     const alertContainer = document.getElementById('alertContainer');
     if (!alertContainer) return;
 
@@ -314,13 +438,14 @@
   }
 
   // Funcion para eliminar orders de clientes
-  window.eliminarOrder = function eliminarOrder(idOrder) {
+  window.eliminarOrder = async function eliminarOrder(idOrder) {
     const token = sessionStorage.getItem('token');
     if (!token) {
       alert('Token no válido');
       return;
     }
-    if (confirm('¿Estás seguro de eliminar este order?')) {
+    const confirmed = await showConfirmModal('¿Estás seguro de eliminar este order?');
+    if (confirmed) {
       fetch(`/v1/api/order/${idOrder}`, {
         method: 'DELETE',
         headers: {
@@ -344,7 +469,7 @@
 
 
   // Funcion para aceptar orders de transportistas
-  window.aceptarOrder = function aceptarOrder(order) {
+  window.aceptarOrder = async function aceptarOrder(order) {
     const {orderId, description, volume} = order;
     const token = sessionStorage.getItem('token');
     const userId = sessionStorage.getItem('userId');
@@ -356,39 +481,36 @@
       return;
     }
 
-    if (confirm('¿Estás seguro de aceptar esta orden?')) {
-      fetch(`/v1/api/acceptOrder`, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token,
-          'Content-Type': 'application/json'
-        },
-        // TODO: cambiar fecha por las recogidas de los date time pickers
-        body: JSON.stringify({
-          orderId: orderId,
-          userId: userId,
-          shipAt: new Date().toISOString(),
-          shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          description: description,
-          volumen: volume
-        })
-      }).then(async res => {
-        if (res.status === 200) {
-          sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
-          //window.location.href = '/public/transport-orders.html';
-          window.location.reload();
-        } else if (res.status === 404) {
-          throw new Error('Order no encontrado');
-        } else {
-          const errorBody = await res.json().catch(() => ({}));
-          const errorMsg = errorBody.error || 'Error al aceptar el order';
-          throw new Error(errorMsg);
-        }
-      }).catch(err => {
-        console.error(err);
-        alert('Error: ' + err.message);
-      });
-    }
+    fetch(`/v1/api/acceptOrder`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        orderId: orderId,
+        userId: userId,
+        shipAt: new Date().toISOString(),
+        shipTo: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        description: description,
+        volumen: volume
+      })
+    }).then(async res => {
+      if (res.status === 200) {
+        sessionStorage.setItem('pendingAlert', 'Order aceptado correctamente.');
+        //window.location.href = '/public/transport-orders.html';
+        window.location.reload();
+      } else if (res.status === 404) {
+        throw new Error('Order no encontrado');
+      } else {
+        const errorBody = await res.json().catch(() => ({}));
+        const errorMsg = errorBody.error || 'Error al aceptar el order';
+        throw new Error(errorMsg);
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Error: ' + err.message);
+    });
   }
 
   const acceptedOrderstBtn = document.getElementById('acceptedOrderstBtn');

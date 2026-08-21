@@ -12,6 +12,45 @@
         return div.innerHTML;
     }
 
+    // Modal de confirmación (sustituye a confirm())
+    const confirmModal = document.getElementById('confirmModal');
+
+    function showConfirmModal(message) {
+        return new Promise((resolve) => {
+            if (!confirmModal) {
+                resolve(window.confirm(message));
+                return;
+            }
+
+            document.getElementById('confirmModalMessage').textContent = message;
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('flex');
+
+            const yesBtn = document.getElementById('confirmModalYesBtn');
+            const noBtn = document.getElementById('confirmModalNoBtn');
+
+            function cleanup(result) {
+                confirmModal.classList.add('hidden');
+                confirmModal.classList.remove('flex');
+                yesBtn.removeEventListener('click', onYes);
+                noBtn.removeEventListener('click', onNo);
+                confirmModal.removeEventListener('click', onBackdrop);
+                document.removeEventListener('keydown', onKeydown);
+                resolve(result);
+            }
+
+            function onYes() { cleanup(true); }
+            function onNo() { cleanup(false); }
+            function onBackdrop(e) { if (e.target === confirmModal) cleanup(false); }
+            function onKeydown(e) { if (e.key === 'Escape') cleanup(false); }
+
+            yesBtn.addEventListener('click', onYes);
+            noBtn.addEventListener('click', onNo);
+            confirmModal.addEventListener('click', onBackdrop);
+            document.addEventListener('keydown', onKeydown);
+        });
+    }
+
     // comprobamos si el token existe
     if (!token) {
         window.location.href = '/public/login.html';
@@ -102,12 +141,14 @@
                 console.error(err);
 
                 // Si fue un 500 mostramos el mensaje del backend, si no, mensaje genérico
-                alert(err.message.includes("Internal server")
+                showAlert(err.message.includes("Internal server")
                     ? 'No se pudieron obtener tus pedidos: ' + err.message
-                    : 'Sesión inválida. Inicie sesión nuevamente.');
+                    : 'Sesión inválida. Inicie sesión nuevamente.', 'error');
 
                 sessionStorage.clear();
-                window.location.href = '/public/login.html';
+                setTimeout(() => {
+                    window.location.href = '/public/login.html';
+                }, 500);
             });
 
             document.getElementById('volverBtn').addEventListener('click', () => {
@@ -117,12 +158,16 @@
     }
 
     // Muestra un alert con fade in/out durante `duration` ms
-    function showAlert(message, duration = 5000) {
+    function showAlert(message, type = 'success', duration = 5000) {
         const alertContainer = document.getElementById('alertContainer');
         if (!alertContainer) return;
 
+        const styles = type === 'error'
+            ? 'bg-red-50 border border-red-400 text-red-800'
+            : 'bg-green-50 border border-green-400 text-green-800';
+
         const alertDiv = document.createElement('div');
-        alertDiv.className = 'bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300';
+        alertDiv.className = `${styles} px-4 py-3 rounded mb-3 opacity-0 transition-opacity duration-300`;
         alertDiv.setAttribute('role', 'alert');
         alertDiv.textContent = message;
 
@@ -145,13 +190,14 @@
     }
 
     // Funcion para eliminar una orden aceptada
-    window.eliminarAcceptedOrder = function eliminarAcceptedOrder(orderId, userId) {
+    window.eliminarAcceptedOrder = async function eliminarAcceptedOrder(orderId, userId) {
         const token = sessionStorage.getItem('token');
         if (!token) {
-            alert('Token no válido');
+            showAlert('Token no válido', 'error');
             return;
         }
-        if (confirm('¿Estás seguro de eliminar esta orden aceptada?')) {
+        const confirmed = await showConfirmModal('¿Estás seguro de eliminar esta orden aceptada?');
+        if (confirmed) {
             fetch(`/v1/api/acceptOrder?orderId=${orderId}&userId=${userId}`, {
                 method: 'DELETE',
                 headers: {
@@ -168,7 +214,7 @@
                 window.location.reload();
             }).catch(err => {
                 console.error(err);
-                alert('Error: ' + err.message);
+                showAlert('Error: ' + err.message, 'error');
             });
         }
     }

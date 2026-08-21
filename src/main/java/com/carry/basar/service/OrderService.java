@@ -10,8 +10,6 @@ import reactor.core.publisher.Mono;
 
 public interface OrderService {
 
-    Flux<OrderDto> getOrdersByUserId(Long userId);
-
     Mono<OrderDto> createOrder(OrderDto orderDto);
 
     Flux<OrderDto> getMyOrders();
@@ -21,4 +19,6 @@ public interface OrderService {
     Mono<GetOrderResponse> getOrderById(Long orderId);
 
     Mono<RemoveOrderResponse> removeOrderById(Long orderId);
+
+    Mono<String> sendSuggestedPrice(Long orderId, Double suggestedPrice);
 }
