@@ -2,6 +2,7 @@ package com.carry.basar.service.impl;
 
 import java.time.LocalDateTime;
 
+import com.carry.basar.exceptions.OrdersNotFoundException;
 import com.carry.basar.model.dto.order.GetOrderResponse;
 import com.carry.basar.model.dto.order.RemoveOrderResponse;
 import com.carry.basar.service.EmailService;
@@ -21,6 +22,8 @@ import com.carry.basar.service.OrderService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static com.carry.basar.constants.OrderExceptionConstants.ORDER_NOT_FOUND;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -81,11 +84,11 @@ public class OrderServiceImpl implements OrderService {
     return getAuthenticatedUsername()
             .flatMapMany(username -> userRepository.findByName(username)
                     .switchIfEmpty(Mono.error(new RuntimeException("User not found by name")))
-                    .doOnNext(userAux -> System.out.println("User: " + userAux.getEmail()))
+                    .doOnNext(userAux -> log.info("User: {}", userAux.getEmail()))
                     .flatMapMany(user -> {
                       return orderRepository.findByUserId(user.getId())
-                              .doOnNext(ord -> System.out.println("Order: " + ord.getDescription() + " - " + ord.getOrderDate()))
-                              .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No orders found for you")))
+                              .doOnNext(ord -> log.info("Order: {} - {}", ord.getDescription(), ord.getOrderDate()))
+                              .switchIfEmpty(Mono.error(new OrdersNotFoundException(ORDER_NOT_FOUND)))
                               .map(order -> new OrderDto(
                                       order.getId(),
                                       order.getDescription(),
@@ -101,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
   @Override
   public Flux<OrderDto> getAllOrders() {
     return orderRepository.findAll()
-            .switchIfEmpty(Flux.error(new RuntimeException("No orders found")))
+            .switchIfEmpty(Flux.error(new OrdersNotFoundException(ORDER_NOT_FOUND)))
             .doOnError(throwable -> log.error("Error: {}", throwable.getMessage()))
             .doOnNext(ord -> log.info("Order: {} - {}", ord.getDescription(), ord.getOrderDate()))
             .map(order -> new OrderDto(

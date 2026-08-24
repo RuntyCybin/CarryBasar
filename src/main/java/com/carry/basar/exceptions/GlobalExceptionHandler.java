@@ -24,6 +24,20 @@ public class GlobalExceptionHandler {
         return response;
     }
 
+    /**
+     * ORDERS NOT FOUND EXCEPTION
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(OrdersNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleOrdersNotFoundException(OrdersNotFoundException ex) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", ex.getMessage());
+        response.put("timestamp", String.valueOf(System.currentTimeMillis()));
+        return response;
+    }
+
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleRuntimeExceptions(RuntimeException ex) {
