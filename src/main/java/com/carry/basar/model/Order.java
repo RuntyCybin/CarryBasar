@@ -30,7 +30,7 @@ public class Order {
     private String toLocation;
 
     @Column("precio")
-    Double price;
+    private Double price;
 
 
 
